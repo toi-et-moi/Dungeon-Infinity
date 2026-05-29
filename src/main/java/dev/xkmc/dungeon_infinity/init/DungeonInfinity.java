@@ -1,0 +1,68 @@
+package dev.xkmc.dungeon_infinity.init;
+
+import com.tterrag.registrate.providers.ProviderType;
+import dev.xkmc.dungeon_infinity.init.data.DIConfig;
+import dev.xkmc.dungeon_infinity.init.data.DIConfigGen;
+import dev.xkmc.dungeon_infinity.init.data.DILang;
+import dev.xkmc.dungeon_infinity.init.reg.DIWorldGen;
+import dev.xkmc.l2core.init.reg.registrate.L2Registrate;
+import dev.xkmc.l2core.init.reg.simple.Reg;
+import dev.xkmc.l2core.serial.config.PacketHandlerWithConfig;
+import net.minecraft.resources.Identifier;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+// The value here should match an entry in the META-INF/mods.toml file
+@Mod(DungeonInfinity.MODID)
+@EventBusSubscriber(modid = DungeonInfinity.MODID)
+public class DungeonInfinity {
+
+	public static final String MODID = "dungeon_infinity";
+	public static final Logger LOGGER = LogManager.getLogger();
+	public static final Reg REG = new Reg(MODID);
+	public static final L2Registrate REGISTRATE = new L2Registrate(MODID);
+
+	public static final PacketHandlerWithConfig HANDLER = new PacketHandlerWithConfig(
+			DungeonInfinity.MODID, 1
+	);
+
+	public DungeonInfinity(IEventBus bus) {
+		DIWorldGen.register();
+		DIConfig.init();
+
+	}
+
+	@SubscribeEvent
+	public static void modifyAttributes(EntityAttributeModificationEvent event) {
+	}
+
+	@SubscribeEvent
+	public static void setup(final FMLCommonSetupEvent event) {
+		event.enqueueWork(() -> {
+
+		});
+	}
+
+	@SubscribeEvent(priority = EventPriority.HIGH)
+	public static void gatherData(GatherDataEvent.Client event) {
+		REGISTRATE.addDataGenerator(ProviderType.LANG, DILang::genLang);
+		var init = REGISTRATE.getDataGenInitializer();
+		var gen = event.getGenerator();
+		var output = gen.getPackOutput();
+		var pvd = event.getLookupProvider();
+		gen.addProvider(true, new DIConfigGen(gen, pvd));
+	}
+
+	public static Identifier loc(String id) {
+		return Identifier.fromNamespaceAndPath(MODID, id);
+	}
+
+}
