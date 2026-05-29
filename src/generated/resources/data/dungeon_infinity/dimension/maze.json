@@ -1,0 +1,7 @@
+{
+  "type": "dungeon_infinity:maze",
+  "generator": {
+    "type": "dungeon_infinity:maze",
+    "biome": "dungeon_infinity:maze"
+  }
+}

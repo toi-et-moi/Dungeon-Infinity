@@ -3,6 +3,7 @@ package dev.xkmc.dungeon_infinity.init;
 import com.tterrag.registrate.providers.ProviderType;
 import dev.xkmc.dungeon_infinity.init.data.DIConfig;
 import dev.xkmc.dungeon_infinity.init.data.DIConfigGen;
+import dev.xkmc.dungeon_infinity.init.data.DIDimensionGen;
 import dev.xkmc.dungeon_infinity.init.data.DILang;
 import dev.xkmc.dungeon_infinity.init.reg.DIWorldGen;
 import dev.xkmc.l2core.init.reg.registrate.L2Registrate;
@@ -55,6 +56,7 @@ public class DungeonInfinity {
 	public static void gatherData(GatherDataEvent.Client event) {
 		REGISTRATE.addDataGenerator(ProviderType.LANG, DILang::genLang);
 		var init = REGISTRATE.getDataGenInitializer();
+		DIDimensionGen.init(init);
 		var gen = event.getGenerator();
 		var output = gen.getPackOutput();
 		var pvd = event.getLookupProvider();
