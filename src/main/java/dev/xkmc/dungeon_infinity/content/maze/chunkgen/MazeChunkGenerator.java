@@ -1,8 +1,9 @@
-package dev.xkmc.dungeon_infinity.content.maze.holder;
+package dev.xkmc.dungeon_infinity.content.maze.chunkgen;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.xkmc.dungeon_infinity.init.DungeonInfinity;
+import dev.xkmc.dungeon_infinity.init.reg.DIItems;
 import dev.xkmc.l2serial.util.LazyFunction;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.Identifier;
@@ -67,7 +68,7 @@ public class MazeChunkGenerator extends EmptyChunkGenerator {
 
 	@Override
 	public NoiseColumn getBaseColumn(int x, int z, LevelHeightAccessor height, RandomState random) {
-		var state = Blocks.STONE.defaultBlockState();
+		var state = DIItems.MAZESTONE.getDefaultState();
 		BlockState[] states = new BlockState[height.getHeight()];
 		for (int i = 0; i < height.getHeight(); i++) {
 			states[i] = state;

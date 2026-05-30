@@ -1,4 +1,4 @@
-package dev.xkmc.dungeon_infinity.content.maze.holder;
+package dev.xkmc.dungeon_infinity.content.maze.chunkgen;
 
 import dev.xkmc.dungeon_infinity.content.maze.generator.IRandom;
 import dev.xkmc.dungeon_infinity.content.maze.generator.MazeConfig;
@@ -15,7 +15,9 @@ import java.util.Random;
 
 public class MazeDimHolder {
 
-	private final int r0 = 16, r1 = 25, r2 = 25, y1 = 16;
+	private final int r1 = 25;
+	private final int r2 = 25;
+	private final int y1 = 16;
 	private final long seed;
 	private final Long2ObjectMap<RegionStack> stacks = new Long2ObjectOpenHashMap<>();
 
@@ -37,6 +39,7 @@ public class MazeDimHolder {
 		int cz = z1 / r1;
 		int rx = x1 - cx * r1;
 		int rz = z1 - cz * r1;
+		stack.getColumn(cx, cz).check();
 		int[] ans = new int[y1];
 		for (int i = 0; i < y1; i++) {
 			ans[i] = stack.getRegion(i).getRegion(cx, cz).getCellType(rx, rz);
@@ -67,7 +70,7 @@ public class MazeDimHolder {
 			this.z = z;
 		}
 
-		public synchronized TopWall getWall(int y, Direction.Axis dir) {
+		public TopWall getWall(int y, Direction.Axis dir) {
 			var side = dir == Direction.Axis.X ? wallX : dir == Direction.Axis.Z ? wallZ : null;
 			if (side == null) throw new IllegalArgumentException("Wrong axis");
 			if (side[y] != null) return side[y];
@@ -77,7 +80,7 @@ public class MazeDimHolder {
 			return ans;
 		}
 
-		public synchronized TopRegion getRegion(int y) {
+		public TopRegion getRegion(int y) {
 			if (regions[y] != null) return regions[y];
 			var pos = new Vec3i(x, y, z);
 			var regionSeed = MazeRandHelper.getRootCellSeed(seed, pos);
@@ -86,11 +89,11 @@ public class MazeDimHolder {
 			return region;
 		}
 
-		public synchronized MazeColumn getColumn(int cx, int cz) {
+		public MazeColumn getColumn(int cx, int cz) {
 			if (columns[cx][cz] != null) return columns[cx][cz];
 			var pos = new Vec3i(x * r2 + cx, 0, z * r2 + cz);
 			var colSeed = MazeRandHelper.getColumnSeed(seed, pos.getX(), pos.getZ());
-			var ans = new MazeColumn(colSeed, pos);
+			var ans = new MazeColumn(colSeed, cx, cz);
 			columns[cx][cz] = ans;
 			return ans;
 		}
@@ -144,10 +147,13 @@ public class MazeDimHolder {
 
 			public class SubRegion {
 
+				private final int cx, cz;
 				private final int[][] maze;
 				private final MazeColumn col;
 
 				public SubRegion(long seed, int cx, int cz) {
+					this.cx = cx;
+					this.cz = cz;
 					this.maze = getMaze(r1, seed).ans;
 					this.col = getColumn(cx, cz);
 					int x0 = getSubWall(cx, cz, Direction.Axis.X);
@@ -162,7 +168,7 @@ public class MazeDimHolder {
 						int offset = y - col.bossRoom;
 						for (int dx = 0; dx <= 2; dx++) {
 							for (int dz = 0; dz <= 2; dz++) {
-								maze[r1 / 2 - 1 + dx][r1 / 2 - 1 + dz] |= (offset * 9 + dx * 3 + dz + 1) << 4;
+								maze[r1 / 2 - 1 + dx][r1 / 2 - 1 + dz] |= (offset * 9 + dx * 3 + dz + 1) << 6;
 							}
 						}
 					}
@@ -189,12 +195,46 @@ public class MazeDimHolder {
 
 		public class MazeColumn {
 
-			private final Vec3i pos;
+			private final int cx, cz;
 			private final int bossRoom;
+			private final long seed;
 
-			public MazeColumn(long seed, Vec3i pos) {
-				this.pos = pos;
+			private boolean checked = false;
+
+			public MazeColumn(long seed, int cx, int cz) {
+				this.cx = cx;
+				this.cz = cz;
 				bossRoom = new Random(seed).nextInt(y1 - 2);
+				this.seed = seed;
+			}
+
+			public void check() {
+				if (checked) return;
+				checked = true;
+				var regions = new TopRegion.SubRegion[y1];
+				var rand = new Random(seed);
+				rand.nextInt();
+				for (int i = 0; i < y1; i++) {
+					regions[i] = getRegion(i).getRegion(cx, cz);
+					if (i == 0) continue;
+					var low = regions[i - 1].maze;
+					var maze = regions[i].maze;
+					for (int dx = 0; dx < r1; dx++) {
+						for (int dz = 0; dz < r1; dz++) {
+							if (low[dx][dz] == 1 && maze[dx][dz] == 2 ||
+									low[dx][dz] == 2 && maze[dx][dz] == 1 ||
+									low[dx][dz] == 4 && maze[dx][dz] == 8 ||
+									low[dx][dz] == 8 && maze[dx][dz] == 4
+							) {
+								float chance = 0.3f + 0.7f * (i + 1) / y1;
+								if (rand.nextFloat() < chance) {
+									low[dx][dz] |= 16;
+									maze[dx][dz] |= 32;
+								}
+							}
+						}
+					}
+				}
 			}
 
 		}

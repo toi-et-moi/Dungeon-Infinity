@@ -1,4 +1,4 @@
-package dev.xkmc.dungeon_infinity.content.maze.holder;
+package dev.xkmc.dungeon_infinity.content.maze.chunkgen;
 
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;

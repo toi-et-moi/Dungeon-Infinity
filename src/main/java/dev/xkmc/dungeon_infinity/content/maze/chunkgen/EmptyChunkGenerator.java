@@ -1,4 +1,4 @@
-package dev.xkmc.dungeon_infinity.content.maze.holder;
+package dev.xkmc.dungeon_infinity.content.maze.chunkgen;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -10,7 +10,6 @@ import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.RandomState;
 
 import java.util.List;
