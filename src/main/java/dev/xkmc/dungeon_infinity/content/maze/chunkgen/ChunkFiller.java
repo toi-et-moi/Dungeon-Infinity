@@ -50,6 +50,21 @@ public class ChunkFiller {
 	}
 
 	private CellInstance getCell(int cell) {
+		if (cell >= 64) {
+			int room = cell >> 6;
+			return switch (room) {
+				case 1 -> new CellInstance("boss_corner");
+				case 2 -> new CellInstance("boss_side");
+				case 3 -> new CellInstance("boss_corner", Rotation.COUNTERCLOCKWISE_90);
+				case 4 -> new CellInstance("boss_side", Rotation.CLOCKWISE_90);
+				case 5 -> new CellInstance("boss_center");
+				case 6 -> new CellInstance("boss_side", Rotation.COUNTERCLOCKWISE_90);
+				case 7 -> new CellInstance("boss_corner", Rotation.CLOCKWISE_90);
+				case 8 -> new CellInstance("boss_side", Rotation.CLOCKWISE_180);
+				case 9 -> new CellInstance("boss_corner", Rotation.CLOCKWISE_180);
+				default -> new CellInstance("skip");
+			};
+		}
 		return switch (cell) {
 			case 1 -> new CellInstance("end");
 			case 2 -> new CellInstance("end", Rotation.CLOCKWISE_180);
@@ -66,19 +81,21 @@ public class ChunkFiller {
 			case 13 -> new CellInstance("t_way");
 			case 14 -> new CellInstance("t_way", Rotation.CLOCKWISE_180);
 			case 15 -> new CellInstance("cross");
+
 			case 17 -> new CellInstance("stairs");
 			case 18 -> new CellInstance("stairs", Rotation.CLOCKWISE_180);
+			case 19 -> new CellInstance("cross_stairs");
 			case 20 -> new CellInstance("stairs", Rotation.CLOCKWISE_90);
 			case 24 -> new CellInstance("stairs", Rotation.COUNTERCLOCKWISE_90);
-			case 19 -> new CellInstance("cross_stairs");
 			case 28 -> new CellInstance("cross_stairs", Rotation.CLOCKWISE_90);
+
 			case 33, 34, 36, 40, 35, 44 -> new CellInstance("skip");
+
 			default -> new CellInstance("missing");
 		};
 	}
 
 	public void fillCell(int cell, BlockPos o, WorldGenLevel level, ChunkAccess access, RandomSource random, StructureTemplateManager templates) {
-		if (cell >= 64) return;
 		var ins = getCell(cell);
 		if (ins.id.equals("skip")) return;
 		if (ins.id.equals("missing")) {

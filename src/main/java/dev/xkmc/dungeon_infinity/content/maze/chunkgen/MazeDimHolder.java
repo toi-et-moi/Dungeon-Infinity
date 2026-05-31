@@ -226,21 +226,24 @@ public class MazeDimHolder {
 						for (int dz = m; dz < r1 - m; dz++) {
 							if ((marker[dx][dz] & 1) != 0 || (prevMarker[dx][dz] & 1) != 0)
 								continue;
-							boolean valid = low[dx][dz] == 1 && maze[dx][dz] == 2 ||
+							boolean stairs = low[dx][dz] == 1 && maze[dx][dz] == 2 ||
 									low[dx][dz] == 2 && maze[dx][dz] == 1 ||
 									low[dx][dz] == 4 && maze[dx][dz] == 8 ||
-									low[dx][dz] == 8 && maze[dx][dz] == 4 ||
+									low[dx][dz] == 8 && maze[dx][dz] == 4;
+							boolean cross =
 									low[dx][dz] == 3 && maze[dx][dz] == 12 ||
-									low[dx][dz] == 12 && maze[dx][dz] == 3;
-							if (valid) {
-								float chance = 0.3f + 0.7f * (i + 1) / y1;
-								if (rand.nextFloat() < chance) {
-									low[dx][dz] |= 16;
-									maze[dx][dz] |= 32;
-									for (int ddx = -m; ddx <= m; ddx++) {
-										for (int ddz = -m; ddz <= m; ddz++) {
-											marker[dx + ddx][dz + ddz] |= 1;
-										}
+											low[dx][dz] == 12 && maze[dx][dz] == 3;
+							float chance = 0;
+							if (stairs) chance = 0.3f + 0.7f * (i + 1) / y1;
+							else if (cross) chance = 0.2f + 0.3f * (i + 1) / y1;
+							if (chance <= 0) return;
+							float val = rand.nextFloat();
+							if (val < chance) {
+								low[dx][dz] |= 16;
+								maze[dx][dz] |= 32;
+								for (int ddx = -m; ddx <= m; ddx++) {
+									for (int ddz = -m; ddz <= m; ddz++) {
+										marker[dx + ddx][dz + ddz] |= 1;
 									}
 								}
 							}
