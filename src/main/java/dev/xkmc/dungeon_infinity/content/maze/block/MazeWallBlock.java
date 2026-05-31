@@ -3,7 +3,6 @@ package dev.xkmc.dungeon_infinity.content.maze.block;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.generators.RegistrateBlockModelGenerator;
 import com.tterrag.registrate.providers.generators.RegistrateItemModelGenerator;
-import dev.xkmc.dungeon_infinity.init.DungeonInfinity;
 import dev.xkmc.l2modularblock.core.DelegateBlock;
 import dev.xkmc.l2modularblock.mult.*;
 import dev.xkmc.l2modularblock.one.MirrorRotateBlockMethod;
@@ -17,6 +16,7 @@ import net.minecraft.client.data.models.model.TexturedModel;
 import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -41,8 +41,7 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static net.minecraft.client.data.models.BlockModelGenerators.*;
 
@@ -96,7 +95,54 @@ public class MazeWallBlock {
 				}
 				return InteractionResult.SUCCESS;
 			}
+			if (stack.is(Items.ECHO_SHARD) && pl.getAbilities().instabuild) {
+				if (level instanceof ServerLevel sl) {
+					Queue<BlockPos> queue = new ArrayDeque<>();
+					Set<BlockPos> visited = new LinkedHashSet<>();
+					List<BlockPos> ans = new ArrayList<>();
+					queue.add(pos);
+					visited.add(pos);
+					while (!queue.isEmpty()) {
+						var e = queue.poll();
+						ans.add(e);
+						for (var dir : Direction.values()) {
+							var rel = e.relative(dir);
+							if (visited.contains(rel)) continue;
+							visited.add(rel);
+							if (level.getBlockState(rel).getBlock() == state.getBlock()) {
+								queue.add(rel);
+							}
+						}
+					}
+					int count = 0;
+					for (var e : ans) {
+						if (update(level.getBlockState(e), sl, e)) {
+							count++;
+						}
+					}
+					pl.sendSystemMessage(Component.literal(count + " blocks updated"));
+				}
+				return InteractionResult.SUCCESS;
+			}
 			return InteractionResult.PASS;
+		}
+
+		private boolean update(BlockState state, ServerLevel level, BlockPos pos) {
+			BlockState self = state;
+			for (Direction dire : Direction.values()) {
+				BlockPos next = pos.relative(dire);
+				if (level.isOutsideBuildHeight(next))
+					continue;
+				BlockState nei = level.getBlockState(next);
+				if (!self.getValue(MAP.get(dire)) && nei.getBlock() == self.getBlock()) {
+					self = self.setValue(MAP.get(dire), true);
+				}
+			}
+			if (self != state) {
+				level.setBlock(pos, self, 18);
+				return true;
+			}
+			return false;
 		}
 
 		@Override
@@ -146,7 +192,6 @@ public class MazeWallBlock {
 				}
 			}
 			if (self != state) {
-				DungeonInfinity.LOGGER.info("Maze Block update at " + pos);
 				level.setBlock(pos, self, 18);
 			}
 		}

@@ -17,7 +17,7 @@ public class MazeDimHolder {
 
 	private final int r1 = 25;
 	private final int r2 = 25;
-	private final int y1 = 16;
+	private final int y1 = 32;
 	private final long seed;
 	private final Long2ObjectMap<RegionStack> stacks = new Long2ObjectOpenHashMap<>();
 
@@ -214,26 +214,39 @@ public class MazeDimHolder {
 				var regions = new TopRegion.SubRegion[y1];
 				var rand = new Random(seed);
 				rand.nextInt();
+				int[][] prevMarker = new int[r1][r1];
+				int m = 2;
 				for (int i = 0; i < y1; i++) {
 					regions[i] = getRegion(i).getRegion(cx, cz);
 					if (i == 0) continue;
 					var low = regions[i - 1].maze;
 					var maze = regions[i].maze;
-					for (int dx = 0; dx < r1; dx++) {
-						for (int dz = 0; dz < r1; dz++) {
-							if (low[dx][dz] == 1 && maze[dx][dz] == 2 ||
+					int[][] marker = new int[r1][r1];
+					for (int dx = m; dx < r1 - m; dx++) {
+						for (int dz = m; dz < r1 - m; dz++) {
+							if ((marker[dx][dz] & 1) != 0 || (prevMarker[dx][dz] & 1) != 0)
+								continue;
+							boolean valid = low[dx][dz] == 1 && maze[dx][dz] == 2 ||
 									low[dx][dz] == 2 && maze[dx][dz] == 1 ||
 									low[dx][dz] == 4 && maze[dx][dz] == 8 ||
-									low[dx][dz] == 8 && maze[dx][dz] == 4
-							) {
+									low[dx][dz] == 8 && maze[dx][dz] == 4 ||
+									low[dx][dz] == 3 && maze[dx][dz] == 12 ||
+									low[dx][dz] == 12 && maze[dx][dz] == 3;
+							if (valid) {
 								float chance = 0.3f + 0.7f * (i + 1) / y1;
 								if (rand.nextFloat() < chance) {
 									low[dx][dz] |= 16;
 									maze[dx][dz] |= 32;
+									for (int ddx = -m; ddx <= m; ddx++) {
+										for (int ddz = -m; ddz <= m; ddz++) {
+											marker[dx + ddx][dz + ddz] |= 1;
+										}
+									}
 								}
 							}
 						}
 					}
+					prevMarker = marker;
 				}
 			}
 

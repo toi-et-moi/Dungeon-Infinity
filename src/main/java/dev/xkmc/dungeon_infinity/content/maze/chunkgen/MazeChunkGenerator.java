@@ -3,15 +3,11 @@ package dev.xkmc.dungeon_infinity.content.maze.chunkgen;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.xkmc.dungeon_infinity.init.DungeonInfinity;
-import dev.xkmc.dungeon_infinity.init.reg.DIItems;
-import dev.xkmc.l2serial.util.LazyFunction;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.util.Util;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.LevelHeightAccessor;
-import net.minecraft.world.level.NoiseColumn;
-import net.minecraft.world.level.StructureManager;
+import net.minecraft.world.level.*;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.FixedBiomeSource;
 import net.minecraft.world.level.block.Blocks;
@@ -20,6 +16,7 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.blending.Blender;
+import org.jspecify.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -32,13 +29,20 @@ public class MazeChunkGenerator extends EmptyChunkGenerator {
 	).apply(i, MazeChunkGenerator::new));
 
 	private final Holder<Biome> biome;
-	private final LazyFunction<Long, MazeDimHolder> maze;
 	private final ChunkFiller filler = new ChunkFiller();
+
+	private @Nullable MazeDimHolder cachedMaze;
 
 	public MazeChunkGenerator(Holder<Biome> biome) {
 		super(new FixedBiomeSource(biome));
 		this.biome = biome;
-		maze = LazyFunction.create(MazeDimHolder::new);
+	}
+
+	public MazeDimHolder getMaze(RandomState random) {
+		if (cachedMaze != null) return cachedMaze;
+		long seed = random.getOrCreateRandomFactory(ID).at(0, 0, 0).nextLong();
+		cachedMaze = new MazeDimHolder(seed);
+		return cachedMaze;
 	}
 
 	@Override
@@ -54,11 +58,22 @@ public class MazeChunkGenerator extends EmptyChunkGenerator {
 	@Override
 	public CompletableFuture<ChunkAccess> fillFromNoise(Blender blender, RandomState random, StructureManager structures, ChunkAccess access) {
 		return CompletableFuture.supplyAsync(() -> {
-			var maze = this.maze.get(random.getOrCreateRandomFactory(ID).at(0, 0, 0).nextLong());
+			var maze = getMaze(random);
 			ChunkPos pos = access.getPos();
 			filler.fillChunk(maze, pos, access, random);
 			return access;
 		}, Util.backgroundExecutor());
+	}
+
+	@Override
+	public void applyBiomeDecoration(WorldGenLevel level, ChunkAccess access, StructureManager structureManager) {
+		var server = level.getServer();
+		if (server == null) return;
+		if (!(level.getChunkSource() instanceof ServerChunkCache source)) return;
+		var random = source.randomState();
+		var maze = getMaze(random);
+		ChunkPos pos = access.getPos();
+		filler.decorateChunk(maze, pos, level, access, random, server.getStructureManager());
 	}
 
 	@Override
@@ -68,7 +83,7 @@ public class MazeChunkGenerator extends EmptyChunkGenerator {
 
 	@Override
 	public NoiseColumn getBaseColumn(int x, int z, LevelHeightAccessor height, RandomState random) {
-		var state = DIItems.MAZESTONE.getDefaultState();
+		var state = Blocks.STONE.defaultBlockState();
 		BlockState[] states = new BlockState[height.getHeight()];
 		for (int i = 0; i < height.getHeight(); i++) {
 			states[i] = state;
