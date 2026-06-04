@@ -1,5 +1,6 @@
 package dev.xkmc.dungeon_infinity.content.maze.chunkgen;
 
+import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 
 /**
@@ -10,21 +11,38 @@ import net.minecraft.world.level.block.Rotation;
  */
 public class CellInterpreter {
 
-	public static boolean isBossRoom(int cell) {
-		return ((cell >> 6) & 31) != 0;
-	}
-
-	public static int getBossRoom(int cell) {
-		return cell >> 6;
-	}
-
 	public static int getOpenings(int cell) {
 		return cell & 63;
 	}
 
-	public static int setBossRoom(int data) {
+	public static boolean isBossRoom(int cell) {
+		var data = ((cell >> 6) & 31) - 5;
+		return data >= 0;
+	}
+
+	public static int getBossRoom(int cell) {
+		return ((cell >> 6) & 31) - 5;
+	}
+
+	public static int setBossRoom(int offset, int dx, int dz) {
+		int data = offset * 9 + dx * 3 + dz + 5;
 		return data << 6;
 	}
+
+	public static boolean isQuadRoom(int cell) {
+		var data = ((cell >> 6) & 31) - 1;
+		return data >= 0 && data < 4;
+	}
+
+	public static int getQuadRoom(int cell) {
+		return ((cell >> 6) & 31) - 1;
+	}
+
+	public static int setQuadRoom(int dx, int dz) {
+		int data = dx * 2 + dz + 1;
+		return data << 6;
+	}
+
 
 	public static int getRoomTypeMask(int cell, int marker) {
 		return (marker - 1) << 11;
@@ -42,6 +60,7 @@ public class CellInterpreter {
 	 */
 	public static int getCellFlags(int cell) {
 		if (isBossRoom(cell)) return 0;
+		if (isQuadRoom(cell)) return 0;
 		return switch (getTemplateType(cell)) {
 			case 1, 7, 8, 9 -> 1;
 			case 6 -> 2;
@@ -52,7 +71,6 @@ public class CellInterpreter {
 
 
 	public static float getRoomChance(int cell) {
-		if (isBossRoom(cell)) return 0;
 		return switch (getTemplateType(cell)) {
 			case 5 -> 1;
 			case 4 -> 0.5f;
@@ -134,17 +152,33 @@ public class CellInterpreter {
 		if (isBossRoom(cell)) {
 			int room = getBossRoom(cell);
 			return switch (room) {
-				case 1 -> BOSS_CORNER;
-				case 2 -> BOSS_SIDE;
-				case 3 -> BOSS_CORNER.with(Rotation.COUNTERCLOCKWISE_90);
-				case 4 -> BOSS_SIDE.with(Rotation.CLOCKWISE_90);
-				case 5 -> BOSS_CENTER;
-				case 6 -> BOSS_SIDE.with(Rotation.COUNTERCLOCKWISE_90);
-				case 7 -> BOSS_CORNER.with(Rotation.CLOCKWISE_90);
-				case 8 -> BOSS_SIDE.with(Rotation.CLOCKWISE_180);
-				case 9 -> BOSS_CORNER.with(Rotation.CLOCKWISE_180);
+				case 0 -> BOSS_CORNER;
+				case 1 -> BOSS_SIDE;
+				case 2 -> BOSS_CORNER.with(Rotation.COUNTERCLOCKWISE_90);
+				case 3 -> BOSS_SIDE.with(Rotation.CLOCKWISE_90);
+				case 4 -> BOSS_CENTER;
+				case 5 -> BOSS_SIDE.with(Rotation.COUNTERCLOCKWISE_90);
+				case 6 -> BOSS_CORNER.with(Rotation.CLOCKWISE_90);
+				case 7 -> BOSS_SIDE.with(Rotation.CLOCKWISE_180);
+				case 8 -> BOSS_CORNER.with(Rotation.CLOCKWISE_180);
 				default -> SKIP;
 			};
+		}
+		if (isQuadRoom(cell)) {
+			int quad = getQuadRoom(cell);
+			int open = getOpenings(cell);
+			var ans = switch (open) {
+				case 9 -> CORNER;
+				case 5 -> CORNER.with(Rotation.CLOCKWISE_90);
+				case 6 -> CORNER.with(Rotation.CLOCKWISE_180);
+				case 10 -> CORNER.with(Rotation.COUNTERCLOCKWISE_90);
+				case 13 -> quad == 2 ? T_WAY : T_WAY.with(Rotation.NONE, Mirror.LEFT_RIGHT);
+				case 7 -> quad == 3 ? T_WAY.with(Rotation.CLOCKWISE_90) : T_WAY.with(Rotation.CLOCKWISE_90, Mirror.LEFT_RIGHT);
+				case 14 -> quad == 1 ? T_WAY.with(Rotation.CLOCKWISE_180) : T_WAY.with(Rotation.CLOCKWISE_180, Mirror.LEFT_RIGHT);
+				case 11 -> quad == 0 ? T_WAY.with(Rotation.COUNTERCLOCKWISE_90) : T_WAY.with(Rotation.COUNTERCLOCKWISE_90, Mirror.LEFT_RIGHT);
+				default -> MISSING;
+			};
+			return ans.room("quad/");
 		}
 		int open = getOpenings(cell);
 		var room = getRoomName(getRoomType(cell));

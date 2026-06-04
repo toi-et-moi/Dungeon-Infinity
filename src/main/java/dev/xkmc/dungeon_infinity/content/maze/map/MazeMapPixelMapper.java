@@ -28,7 +28,7 @@ public class MazeMapPixelMapper {
 		int[][] ans = new int[5][5];
 
 		if (CellInterpreter.isBossRoom(cell)) {
-			int boss = CellInterpreter.getBossRoom(cell) - 1;
+			int boss = CellInterpreter.getBossRoom(cell);
 			int c = boss % 9;
 			int x = c / 3;
 			int z = c % 3;
@@ -52,6 +52,14 @@ public class MazeMapPixelMapper {
 					ans[0][k] = ans[4][k] = b;
 				}
 			}
+		} else if (CellInterpreter.isQuadRoom(cell)) {
+			int open = CellInterpreter.getOpenings(cell);
+			for (int i = 0; i < 5; i++)
+				Arrays.fill(ans[i], r);
+			if ((open & 1) == 0) for (int i = 0; i <= 4; i++) ans[0][i] = b;
+			if ((open & 2) == 0) for (int i = 0; i <= 4; i++) ans[4][i] = b;
+			if ((open & 4) == 0) for (int i = 0; i <= 4; i++) ans[i][0] = b;
+			if ((open & 8) == 0) for (int i = 0; i <= 4; i++) ans[i][4] = b;
 		} else {
 			int room = CellInterpreter.getRoomType(cell);
 			int open = CellInterpreter.getOpenings(cell);

@@ -21,5 +21,7 @@ public record CellInstance(String id, Rotation rot, Mirror mir) {
 		return new CellInstance(type + id, rot, mir);
 	}
 
-
+	public CellInstance with(Rotation rot, Mirror mir) {
+		return new CellInstance(id, rot, mir);
+	}
 }

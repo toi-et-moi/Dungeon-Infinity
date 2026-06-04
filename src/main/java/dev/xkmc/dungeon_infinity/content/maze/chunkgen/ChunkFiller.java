@@ -52,11 +52,17 @@ public class ChunkFiller {
 				.setKnownShape(true).setIgnoreEntities(true)
 				.setRotation(ins.rot()).setMirror(ins.mir());
 
+		int x0 = 0, x1 = 15, z0 = 0, z1 = 15;
+		switch (ins.mir()) {
+			case LEFT_RIGHT -> z1 = -z1;
+			case FRONT_BACK -> x1 = -x1;
+		}
+
 		BlockPos offset = switch (ins.rot()) {
-			case COUNTERCLOCKWISE_90 -> new BlockPos(0, 0, 15);
-			case CLOCKWISE_90 -> new BlockPos(15, 0, 0);
-			case CLOCKWISE_180 -> new BlockPos(15, 0, 15);
-			default -> BlockPos.ZERO;
+			case COUNTERCLOCKWISE_90 -> new BlockPos(-Math.min(z0, z1), 0, Math.max(x0, x1));
+			case CLOCKWISE_90 -> new BlockPos(Math.max(z0, z1), 0, -Math.min(x0, x1));
+			case CLOCKWISE_180 -> new BlockPos(Math.max(x0, x1), 0, Math.max(z0, z1));
+			default -> new BlockPos(-Math.min(x0, x1), 0, -Math.min(z0, z1));
 		};
 		o = o.offset(offset);
 		template.placeInWorld(level, o, o, settings, random, 18);

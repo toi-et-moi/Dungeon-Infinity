@@ -11,10 +11,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Queue;
-import java.util.Random;
+import java.util.*;
 
 public class MazeDimHolder {
 
@@ -189,7 +186,7 @@ public class MazeDimHolder {
 						int offset = col.bossRoom[y] - 1;
 						for (int dx = 0; dx <= 2; dx++) {
 							for (int dz = 0; dz <= 2; dz++) {
-								maze[r1 / 2 - 1 + dx][r1 / 2 - 1 + dz] |= CellInterpreter.setBossRoom(offset * 9 + dx * 3 + dz + 1);
+								maze[r1 / 2 - 1 + dx][r1 / 2 - 1 + dz] |= CellInterpreter.setBossRoom(offset, dx, dz);
 							}
 						}
 					}
@@ -210,6 +207,7 @@ public class MazeDimHolder {
 					checked = true;
 					col.check();
 					var rand = new Random(roomSeed);
+					new Scanner().scan();
 					int[][] roomType = new int[r2][r2];
 					new Marker(rand, roomType, maze).mark();
 					for (int x = 0; x < r2; x++) {
@@ -217,6 +215,40 @@ public class MazeDimHolder {
 							maze[x][z] |= CellInterpreter.getRoomTypeMask(maze[x][z], roomType[x][z]);
 						}
 					}
+				}
+
+				private class Scanner {
+
+					private void scan() {
+						List<int[]> candidates = new ArrayList<>();
+						for (int dx = 0; dx < r1 - 1; dx++) {
+							for (int dz = 0; dz < r1 - 1; dz++) {
+								if (maze[dx][dz] >= 16) continue;
+								if (maze[dx][dz + 1] >= 16) continue;
+								if (maze[dx + 1][dz] >= 16) continue;
+								if (maze[dx + 1][dz + 1] >= 16) continue;
+								int count = 0;
+								if ((maze[dx][dz] & 1) != 0) count++;
+								if ((maze[dx][dz + 1] & 1) != 0) count++;
+								if ((maze[dx + 1][dz] & 2) != 0) count++;
+								if ((maze[dx + 1][dz + 1] & 2) != 0) count++;
+								if ((maze[dx][dz] & 4) != 0) count++;
+								if ((maze[dx + 1][dz] & 4) != 0) count++;
+								if ((maze[dx][dz + 1] & 8) != 0) count++;
+								if ((maze[dx + 1][dz + 1] & 8) != 0) count++;
+								if (count == 1) candidates.add(new int[]{dx, dz});
+							}
+						}
+						for (var e : candidates) {
+							int dx = e[0];
+							int dz = e[1];
+							maze[dx][dz] |= 10 | CellInterpreter.setQuadRoom(0, 0);
+							maze[dx + 1][dz] |= 9 | CellInterpreter.setQuadRoom(1, 0);
+							maze[dx][dz + 1] |= 6 | CellInterpreter.setQuadRoom(0, 1);
+							maze[dx + 1][dz + 1] |= 5 | CellInterpreter.setQuadRoom(1, 1);
+						}
+					}
+
 				}
 
 				private class Marker {
