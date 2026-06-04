@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class MazeChunkGenerator extends EmptyChunkGenerator {
 
-	private static final Identifier ID = DungeonInfinity.loc("maze_chunkgen");
+	public static final Identifier ID = DungeonInfinity.loc("maze_chunkgen");
 
 	public static final MapCodec<MazeChunkGenerator> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Biome.CODEC.fieldOf("biome").forGetter(x -> x.biome)

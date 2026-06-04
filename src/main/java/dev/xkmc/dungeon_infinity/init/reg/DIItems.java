@@ -1,9 +1,13 @@
 package dev.xkmc.dungeon_infinity.init.reg;
 
 import com.tterrag.registrate.util.entry.BlockEntry;
+import com.tterrag.registrate.util.entry.ItemEntry;
 import dev.xkmc.dungeon_infinity.content.maze.block.MazeWallBlock;
+import dev.xkmc.dungeon_infinity.content.maze.map.MazeMapItem;
 import dev.xkmc.dungeon_infinity.init.DungeonInfinity;
 import dev.xkmc.l2core.init.reg.registrate.SimpleEntry;
+import dev.xkmc.l2core.init.reg.simple.DCReg;
+import dev.xkmc.l2core.init.reg.simple.DCVal;
 import dev.xkmc.l2modularblock.core.DelegateBlock;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
@@ -17,6 +21,11 @@ public class DIItems {
 
 	public static final BlockEntry<DelegateBlock> MAZESTONE;
 
+	public static final ItemEntry<MazeMapItem> MAP;
+
+	public static final DCReg DC = DCReg.of(DungeonInfinity.REG);
+	public static final DCVal<Long> SEED = DC.longVal("seed");
+
 	static {
 		MAZESTONE = DungeonInfinity.REGISTRATE.block("mazestone", p ->
 						DelegateBlock.newBaseBlock(p, MazeWallBlock.ALL_DIRE_STATE, MazeWallBlock.NEIGHBOR, MazeWallBlock.DROP))
@@ -25,6 +34,8 @@ public class DIItems {
 				.item().model(() -> MazeWallBlock.Model::buildItem).build()
 				.register();
 
+		MAP = DungeonInfinity.REGISTRATE.item("maze_map", MazeMapItem::new)
+				.defaultModel().register();
 
 	}
 

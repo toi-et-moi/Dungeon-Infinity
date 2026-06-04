@@ -44,8 +44,8 @@ public class CellInterpreter {
 		if (isBossRoom(cell)) return 0;
 		return switch (getTemplateType(cell)) {
 			case 1, 6, 8, 9 -> 1;
-			case 7, 4 -> 2;
-			case 2, 3, 5 -> 3;
+			case 7 -> 2;
+			case 2, 3, 4, 5 -> 3;
 			default -> 0;
 		};
 	}
@@ -106,6 +106,10 @@ public class CellInterpreter {
 	private static final CellInstance CROSS = new CellInstance("cross");
 	private static final CellInstance STAIRS = new CellInstance("stairs");
 	private static final CellInstance CROSS_STAIRS = new CellInstance("cross_stairs");
+
+	public static boolean isHallway(int room) {
+		return room == 1;
+	}
 
 	public static String getRoomName(int room) {
 		return switch (room) {

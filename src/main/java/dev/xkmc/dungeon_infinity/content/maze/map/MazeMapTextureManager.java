@@ -11,31 +11,62 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.Identifier;
 
-public class MazeMapTextureManager {
+public class MazeMapTextureManager implements AutoCloseable {
 
-	private final MazeDimHolder dim;
-
-	private Long2ObjectMap<MapTextureData> map = new Long2ObjectOpenHashMap<>();
-
-	public MazeMapTextureManager(long seed) {
-		this.dim = new MazeDimHolder(seed);
+	public static MazeMapTextureManager get() {
+		return ((MapTextureManagerProvider) (Minecraft.getInstance().getMapTextureManager())).dungeon_infinity$getMazeData();
 	}
 
-	public MapTextureData get(int x, int y, int z) {
-		var id = BlockPos.asLong(x, y, z);
-		return map.computeIfAbsent(id, e -> new MapTextureData(new Vec3i(x, y, z)));
+	private final Long2ObjectMap<MazeLevelMapSet> dims = new Long2ObjectOpenHashMap<>();
+
+	public MapTextureData get(long seed, int x, int y, int z) {
+		var dim = dims.computeIfAbsent(seed, MazeLevelMapSet::new);
+		return dim.get(x, y, z);
 	}
 
-	public class MapTextureData implements AutoCloseable {
+	@Override
+	public void close() {
+		for (var e : dims.values())
+			e.close();
+		dims.clear();
+	}
 
+	public static class MazeLevelMapSet implements AutoCloseable {
+
+		private final MazeDimHolder dim;
+		private final Long2ObjectMap<MapTextureData> map = new Long2ObjectOpenHashMap<>();
+
+		public MazeLevelMapSet(long seed) {
+			this.dim = new MazeDimHolder(seed);
+		}
+
+		public MapTextureData get(int x, int y, int z) {
+			var id = BlockPos.asLong(x, y, z);
+			return map.computeIfAbsent(id, _ -> new MapTextureData(dim, new Vec3i(x, y, z)));
+		}
+
+		@Override
+		public void close() {
+			for (var e : map.values())
+				e.close();
+			map.clear();
+		}
+
+	}
+
+	public static class MapTextureData implements AutoCloseable {
+
+		private final MazeDimHolder dim;
 		private final DynamicTexture texture;
-		private final Identifier id;
 		private final Vec3i pos;
+
+		public final Identifier id;
 
 		public int w, h;
 		public int[][] data;
 
-		public MapTextureData(Vec3i pos) {
+		public MapTextureData(MazeDimHolder dim, Vec3i pos) {
+			this.dim = dim;
 			this.pos = pos;
 			w = 25;
 			h = 25;
@@ -46,8 +77,7 @@ public class MazeMapTextureManager {
 			fill();
 		}
 
-
-		private void fill() {
+		public void fill() {
 			NativeImage pixels = this.texture.getPixels();
 			int[][] maze = dim.getRegion(pos.getX(), pos.getY(), pos.getZ());
 			for (int x = 0; x < 25; x++) {

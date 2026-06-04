@@ -6,6 +6,7 @@
 	"mixins": [
 	],
 	"client": [
+		"MapTextureManagerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

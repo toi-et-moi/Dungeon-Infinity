@@ -3,14 +3,12 @@ package dev.xkmc.dungeon_infinity.content.maze.chunkgen;
 import dev.xkmc.dungeon_infinity.content.maze.generator.IRandom;
 import dev.xkmc.dungeon_infinity.content.maze.generator.MazeConfig;
 import dev.xkmc.dungeon_infinity.content.maze.generator.MazeGen;
-import dev.xkmc.dungeon_infinity.init.DungeonInfinity;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
-import net.neoforged.fml.loading.FMLEnvironment;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayDeque;
@@ -33,7 +31,6 @@ public class MazeDimHolder {
 		return stacks.computeIfAbsent(ChunkPos.pack(x, z), k0 -> new RegionStack(x, z));
 	}
 
-
 	public synchronized int[][] getRegion(int x, int y, int z) {
 		int x2 = Mth.floorDiv(x, r2);
 		int z2 = Mth.floorDiv(z, r2);
@@ -41,7 +38,7 @@ public class MazeDimHolder {
 		int cx = x - x2 * r2;
 		int cz = z - z2 * r2;
 		stack.getColumn(cx, cz).check();
-		return stack.getRegion(y).getRegion(cx, cz).maze;
+		return stack.getRegion(y).getRegion(cx, cz).getMaze();
 	}
 
 	public synchronized int[] getColumn(int x, int z) {
@@ -62,7 +59,7 @@ public class MazeDimHolder {
 		return ans;
 	}
 
-	private MazeGen getMaze(int rad, long regionSeed) {
+	private MazeGen genMaze(int rad, long regionSeed) {
 		MazeConfig config = new MazeConfig();
 		config.invariant = 2;
 		config.survive = 4;
@@ -125,7 +122,7 @@ public class MazeDimHolder {
 				this.y = pos.getY();
 				long[] seeds = new long[3];
 				MazeRandHelper.getChildrenSeeds(seed, seeds);
-				int[][] maze = getMaze(r2, seeds[0]).ans;
+				int[][] maze = genMaze(r2, seeds[0]).ans;
 				TopWall x0 = getWall(pos.getY(), Direction.Axis.X);
 				TopWall x1 = get(pos.getX() + 1, pos.getZ()).getWall(pos.getY(), Direction.Axis.X);
 				TopWall z0 = getWall(pos.getY(), Direction.Axis.Z);
@@ -169,12 +166,14 @@ public class MazeDimHolder {
 				private final MazeColumn col;
 				public final long roomSeed;
 
+				private boolean checked = false;
+
 				public SubRegion(long seed, int cx, int cz) {
 					this.cx = cx;
 					this.cz = cz;
 					long[] seeds = new long[2];
 					MazeRandHelper.getChildrenSeeds(seed, seeds);
-					this.maze = getMaze(r1, seeds[0]).ans;
+					this.maze = genMaze(r1, seeds[0]).ans;
 					roomSeed = seeds[1];
 					this.col = getColumn(cx, cz);
 					int x0 = getSubWall(cx, cz, Direction.Axis.X);
@@ -195,8 +194,99 @@ public class MazeDimHolder {
 					}
 				}
 
+				public int[][] getMaze() {
+					check();
+					return maze;
+				}
+
 				public int getCellType(int x, int z) {
+					check();
 					return maze[x][z];
+				}
+
+				private void check() {
+					if (checked) return;
+					checked = true;
+					col.check();
+					var rand = new Random(roomSeed);
+					int[][] roomType = new int[r2][r2];
+					new Marker(rand, roomType, maze).mark();
+					for (int x = 0; x < r2; x++) {
+						for (int z = 0; z < r2; z++) {
+							maze[x][z] |= CellInterpreter.getRoomTypeMask(maze[x][z], roomType[x][z]);
+						}
+					}
+				}
+
+				private class Marker {
+
+					private final Random rand;
+					private final int[][] roomType;
+					private final int[][] maze;
+					Queue<int[]> rooms = new ArrayDeque<>();
+					Queue<int[]> hallways = new ArrayDeque<>();
+
+					private Marker(Random rand, int[][] roomType, int[][] maze) {
+						this.rand = rand;
+						this.roomType = roomType;
+						this.maze = maze;
+					}
+
+					private void mark() {
+						for (int x = 0; x < r2; x++) {
+							for (int z = 0; z < r2; z++) {
+								int cell = maze[x][z];
+								int flag = CellInterpreter.getCellFlags(cell);
+								if (flag != 3) {
+									int ans = roomType[x][z] = CellInterpreter.getRoomMarker(cell, flag);
+									if (ans == CellInterpreter.ROOM) rooms.add(new int[]{x, z});
+									if (ans == CellInterpreter.HALLWAY) hallways.add(new int[]{x, z});
+								}
+							}
+						}
+						while (!rooms.isEmpty() || !hallways.isEmpty()) {
+							while (!rooms.isEmpty()) {
+								var r = rooms.poll();
+								int x = r[0];
+								int z = r[1];
+								int cell = maze[x][z];
+								if ((cell & 1) != 0) markHallway(x - 1, z);
+								if ((cell & 2) != 0) markHallway(x + 1, z);
+								if ((cell & 4) != 0) markHallway(x, z - 1);
+								if ((cell & 8) != 0) markHallway(x, z + 1);
+							}
+							if (!hallways.isEmpty()) {
+								var r = hallways.poll();
+								int x = r[0];
+								int z = r[1];
+								int cell = maze[x][z];
+								if ((cell & 1) != 0) markRoom(x - 1, z);
+								if ((cell & 2) != 0) markRoom(x + 1, z);
+								if ((cell & 4) != 0) markRoom(x, z - 1);
+								if ((cell & 8) != 0) markRoom(x, z + 1);
+							}
+						}
+					}
+
+					private void markHallway(int x, int z) {
+						if (x < 0 || x >= r1 || z < 0 || z >= r1) return;
+						if (roomType[x][z] != 0) return;
+						roomType[x][z] = CellInterpreter.HALLWAY;
+						hallways.add(new int[]{x, z});
+					}
+
+					private void markRoom(int x, int z) {
+						if (x < 0 || x >= r1 || z < 0 || z >= r1) return;
+						if (roomType[x][z] != 0) return;
+						if (rand.nextFloat() < 0.5) {
+							roomType[x][z] = CellInterpreter.ROOM;
+							rooms.add(new int[]{x, z});
+						} else {
+							roomType[x][z] = CellInterpreter.HALLWAY;
+							hallways.add(new int[]{x, z});
+						}
+					}
+
 				}
 
 			}
@@ -233,18 +323,11 @@ public class MazeDimHolder {
 			public void check() {
 				if (checked) return;
 				checked = true;
-				long t0 = System.currentTimeMillis();
 				var regions = new TopRegion.SubRegion[y1];
 				for (int i = 0; i < y1; i++) {
 					regions[i] = getRegion(i).getRegion(cx, cz);
 				}
 				fillStairs(regions);
-				for (int i = 0; i < y1; i++) {
-					fillRooms(regions[i]);
-				}
-				long t1 = System.currentTimeMillis();
-				if (!FMLEnvironment.isProduction())
-					DungeonInfinity.LOGGER.info("Column generation takes " + (t1 - t0) + "ms");
 			}
 
 			private void fillStairs(TopRegion.SubRegion[] regions) {
@@ -284,89 +367,6 @@ public class MazeDimHolder {
 					}
 					prevMarker = marker;
 				}
-			}
-
-			private void fillRooms(TopRegion.SubRegion region) {
-				var rand = new Random(region.roomSeed);
-				int[][] roomType = new int[r2][r2];
-				var maze = region.maze;
-				new Marker(rand, roomType, maze).mark();
-				for (int x = 0; x < r2; x++) {
-					for (int z = 0; z < r2; z++) {
-						maze[x][z] |= CellInterpreter.getRoomTypeMask(maze[x][z], roomType[x][z]);
-					}
-				}
-			}
-
-			private class Marker {
-
-				private final Random rand;
-				private final int[][] roomType;
-				private final int[][] maze;
-				Queue<int[]> rooms = new ArrayDeque<>();
-				Queue<int[]> hallways = new ArrayDeque<>();
-
-				private Marker(Random rand, int[][] roomType, int[][] maze) {
-					this.rand = rand;
-					this.roomType = roomType;
-					this.maze = maze;
-				}
-
-				private void mark() {
-					for (int x = 0; x < r2; x++) {
-						for (int z = 0; z < r2; z++) {
-							int cell = maze[x][z];
-							int flag = CellInterpreter.getCellFlags(cell);
-							if (flag != 3) {
-								int ans = roomType[x][z] = CellInterpreter.getRoomMarker(cell, flag);
-								if (ans == CellInterpreter.ROOM) rooms.add(new int[]{x, z});
-								if (ans == CellInterpreter.HALLWAY) hallways.add(new int[]{x, z});
-							}
-						}
-					}
-					while (!rooms.isEmpty() || !hallways.isEmpty()) {
-						while (!rooms.isEmpty()) {
-							var r = rooms.poll();
-							int x = r[0];
-							int z = r[1];
-							int cell = maze[x][z];
-							if ((cell & 1) != 0) markHallway(x - 1, z);
-							if ((cell & 2) != 0) markHallway(x + 1, z);
-							if ((cell & 4) != 0) markHallway(x, z - 1);
-							if ((cell & 8) != 0) markHallway(x, z + 1);
-						}
-						if (!hallways.isEmpty()) {
-							var r = hallways.poll();
-							int x = r[0];
-							int z = r[1];
-							int cell = maze[x][z];
-							if ((cell & 1) != 0) markRoom(x - 1, z);
-							if ((cell & 2) != 0) markRoom(x + 1, z);
-							if ((cell & 4) != 0) markRoom(x, z - 1);
-							if ((cell & 8) != 0) markRoom(x, z + 1);
-						}
-					}
-				}
-
-				private void markHallway(int x, int z) {
-					if (x < 0 || x >= r1 || z < 0 || z >= r1) return;
-					if (roomType[x][z] != 0) return;
-					roomType[x][z] = CellInterpreter.HALLWAY;
-					hallways.add(new int[]{x, z});
-				}
-
-				private void markRoom(int x, int z) {
-					if (x < 0 || x >= r1 || z < 0 || z >= r1) return;
-					if (roomType[x][z] != 0) return;
-					if (rand.nextFloat() < 0.5) {
-						roomType[x][z] = CellInterpreter.ROOM;
-						rooms.add(new int[]{x, z});
-					} else {
-						roomType[x][z] = CellInterpreter.HALLWAY;
-						hallways.add(new int[]{x, z});
-					}
-				}
-
 			}
 
 		}
