@@ -90,6 +90,8 @@ public class MazeMapTextureManager implements AutoCloseable {
 				}
 			}
 
+			data[127][127] = 0xafff00ff;
+
 			for (int y = 0; y < 128; y++) {
 				for (int x = 0; x < 128; x++) {
 					pixels.setPixel(x, y, data[x][y]);

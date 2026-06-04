@@ -1,5 +1,6 @@
 package dev.xkmc.dungeon_infinity.content.maze.map;
 
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
@@ -32,12 +33,12 @@ public class MazeMapScreen extends Screen {
 		g.pose().pushMatrix();
 		g.pose().translate(x0, y0);
 		g.pose().scale(rate, rate);
-		g.blit(RenderPipelines.GUI_TEXTURED, tex.id, -64, -64, 0, 0, 128, 128, 128, 128);
+		g.blit(RenderPipelines.GUI_TEXTURED, tex.id, -63, -63, 0, 0, 125, 125, 128, 128);
 		int px = pos.getX() - x * 16 * 25;
 		int pz = pos.getZ() - z * 16 * 25;
-		g.pose().translate(-64 + px / 16f * 5f, -64 + pz / 16f * 5f);
+		g.pose().translate(-63 + px / 16f * 5f, -63 + pz / 16f * 5f);
 		float r = Mth.sin(((int) (System.currentTimeMillis() % 1000)) / 1000f * Math.PI) / 2 + 1;
-		g.pose().scale(r, r);
+		g.pose().scale(r, r);;
 		g.fill(-1, -1, 1, 1, 0xafff00ff);
 		g.pose().popMatrix();
 	}
