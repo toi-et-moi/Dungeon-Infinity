@@ -6,8 +6,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.block.Mirror;
-import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.RandomSupport;
@@ -17,19 +15,6 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlac
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 public class ChunkFiller {
-
-	public record CellInstance(String id, Rotation rot, Mirror mir) {
-
-		public CellInstance(String id, Rotation rot) {
-			this(id, rot, Mirror.NONE);
-		}
-
-		public CellInstance(String id) {
-			this(id, Rotation.NONE);
-		}
-
-
-	}
 
 
 	public ChunkFiller() {
@@ -49,63 +34,17 @@ public class ChunkFiller {
 		}
 	}
 
-	private CellInstance getCell(int cell) {
-		if (cell >= 64) {
-			int room = cell >> 6;
-			return switch (room) {
-				case 1 -> new CellInstance("boss_corner");
-				case 2 -> new CellInstance("boss_side");
-				case 3 -> new CellInstance("boss_corner", Rotation.COUNTERCLOCKWISE_90);
-				case 4 -> new CellInstance("boss_side", Rotation.CLOCKWISE_90);
-				case 5 -> new CellInstance("boss_center");
-				case 6 -> new CellInstance("boss_side", Rotation.COUNTERCLOCKWISE_90);
-				case 7 -> new CellInstance("boss_corner", Rotation.CLOCKWISE_90);
-				case 8 -> new CellInstance("boss_side", Rotation.CLOCKWISE_180);
-				case 9 -> new CellInstance("boss_corner", Rotation.CLOCKWISE_180);
-				default -> new CellInstance("skip");
-			};
-		}
-		return switch (cell) {
-			case 1 -> new CellInstance("end");
-			case 2 -> new CellInstance("end", Rotation.CLOCKWISE_180);
-			case 3 -> new CellInstance("straight");
-			case 4 -> new CellInstance("end", Rotation.CLOCKWISE_90);
-			case 5 -> new CellInstance("corner", Rotation.CLOCKWISE_90);
-			case 6 -> new CellInstance("corner", Rotation.CLOCKWISE_180);
-			case 7 -> new CellInstance("t_way", Rotation.CLOCKWISE_90);
-			case 8 -> new CellInstance("end", Rotation.COUNTERCLOCKWISE_90);
-			case 9 -> new CellInstance("corner");
-			case 10 -> new CellInstance("corner", Rotation.COUNTERCLOCKWISE_90);
-			case 11 -> new CellInstance("t_way", Rotation.COUNTERCLOCKWISE_90);
-			case 12 -> new CellInstance("straight", Rotation.CLOCKWISE_90);
-			case 13 -> new CellInstance("t_way");
-			case 14 -> new CellInstance("t_way", Rotation.CLOCKWISE_180);
-			case 15 -> new CellInstance("cross");
-
-			case 17 -> new CellInstance("stairs");
-			case 18 -> new CellInstance("stairs", Rotation.CLOCKWISE_180);
-			case 19 -> new CellInstance("cross_stairs");
-			case 20 -> new CellInstance("stairs", Rotation.CLOCKWISE_90);
-			case 24 -> new CellInstance("stairs", Rotation.COUNTERCLOCKWISE_90);
-			case 28 -> new CellInstance("cross_stairs", Rotation.CLOCKWISE_90);
-
-			case 33, 34, 36, 40, 35, 44 -> new CellInstance("skip");
-
-			default -> new CellInstance("missing");
-		};
-	}
-
 	public void fillCell(int cell, BlockPos o, WorldGenLevel level, ChunkAccess access, RandomSource random, StructureTemplateManager templates) {
-		var ins = getCell(cell);
-		if (ins.id.equals("skip")) return;
-		if (ins.id.equals("missing")) {
+		var ins = CellInterpreter.getTemplate(cell);
+		if (ins == CellInterpreter.SKIP) return;
+		if (ins == CellInterpreter.MISSING) {
 			DungeonInfinity.LOGGER.error("unexpected cell type " + cell + " at " + o);
 			return;
 		}
-		var id = DungeonInfinity.loc("maze/" + ins.id);
+		var id = DungeonInfinity.loc("maze/" + ins.id());
 		var opt = templates.get(id);
 		if (opt.isEmpty()) {
-			DungeonInfinity.LOGGER.error("template " + ins.id + " not found");
+			DungeonInfinity.LOGGER.error("template " + ins.id() + " not found");
 			return;
 		}
 		var template = opt.get();
