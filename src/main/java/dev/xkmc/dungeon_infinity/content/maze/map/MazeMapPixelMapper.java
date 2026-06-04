@@ -23,13 +23,13 @@ public class MazeMapPixelMapper {
 		int a = 0xffafafaf;
 		int g = 0xff7fff7f;
 		int y = 0xffffaf0f;
-		int r = 0xff7fffff;
+		int r = 0xffff7f7f;
 
 		int[][] ans = new int[5][5];
 
 		if (CellInterpreter.isBossRoom(cell)) {
 			int boss = CellInterpreter.getBossRoom(cell) - 1;
-			int c = boss / 9;
+			int c = boss % 9;
 			int x = c / 3;
 			int z = c % 3;
 			for (int i = 0; i < 5; i++)

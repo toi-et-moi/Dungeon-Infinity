@@ -12,6 +12,7 @@ import net.minecraft.world.level.ChunkPos;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Queue;
 import java.util.Random;
 
@@ -184,8 +185,8 @@ public class MazeDimHolder {
 					if (x1 >= 0) maze[r1 - 1][x1] |= 2;
 					if (z0 >= 0) maze[z0][0] |= 4;
 					if (z1 >= 0) maze[z1][r1 - 1] |= 8;
-					if (y >= col.bossRoom && y <= col.bossRoom + 2) {
-						int offset = y - col.bossRoom;
+					if (col.bossRoom[y] > 0) {
+						int offset = col.bossRoom[y] - 1;
 						for (int dx = 0; dx <= 2; dx++) {
 							for (int dz = 0; dz <= 2; dz++) {
 								maze[r1 / 2 - 1 + dx][r1 / 2 - 1 + dz] |= CellInterpreter.setBossRoom(offset * 9 + dx * 3 + dz + 1);
@@ -307,7 +308,7 @@ public class MazeDimHolder {
 		public class MazeColumn {
 
 			private final int cx, cz;
-			private final int bossRoom;
+			private final int[] bossRoom = new int[32];
 			private final long stairSeed;
 
 			private boolean checked = false;
@@ -316,8 +317,21 @@ public class MazeDimHolder {
 				this.cx = cx;
 				this.cz = cz;
 				var rand = new Random(seed);
-				bossRoom = rand.nextInt(y1 - 2);
 				stairSeed = rand.nextLong();
+				int[] spaces = new int[6];
+				Arrays.fill(spaces, 2);
+				for (int i = 0; i < 5; i++) {
+					int layer = rand.nextInt(6);
+					spaces[layer]++;
+				}
+				int layer = 0;
+				for (int i = 0; i < 5; i++) {
+					int e = spaces[i];
+					layer += e;
+					for (int j = 0; j < 3; j++)
+						bossRoom[layer + j] = j + 1;
+					layer += 3;
+				}
 			}
 
 			public void check() {
@@ -334,10 +348,40 @@ public class MazeDimHolder {
 				for (int dx = 0; dx < r1; dx++) {
 					for (int dz = 0; dz < r1; dz++) {
 						int cell = maze[dx][dz];
-						if (cell == 1 && x > 0) marker[x - 1][z] = 1;
-						if (cell == 2 && x < r1 - 1) marker[x + 1][z] = 1;
-						if (cell == 4 && z > 0) marker[x][z - 1] = 1;
-						if (cell == 8 && z < r1 - 1) marker[x][z + 1] = 1;
+						if (cell == 1 && x > 0) marker[dx - 1][dz] = 1;
+						if (cell == 2 && x < r1 - 1) marker[dx + 1][dz] = 1;
+						if (cell == 4 && z > 0) marker[dx][dz - 1] = 1;
+						if (cell == 8 && z < r1 - 1) marker[dx][dz + 1] = 1;
+					}
+				}
+			}
+
+			private void fillLayer(int[][] prevMarker, int[][] marker, int[][] low, int[][] maze, int m, int y, Random rand) {
+				for (int dx = m; dx < r1 - m; dx++) {
+					for (int dz = m; dz < r1 - m; dz++) {
+						if ((marker[dx][dz] & 1) != 0 || (prevMarker[dx][dz] & 1) != 0)
+							continue;
+						boolean stairs = low[dx][dz] == 1 && maze[dx][dz] == 2 ||
+								low[dx][dz] == 2 && maze[dx][dz] == 1 ||
+								low[dx][dz] == 4 && maze[dx][dz] == 8 ||
+								low[dx][dz] == 8 && maze[dx][dz] == 4;
+						boolean cross =
+								low[dx][dz] == 3 && maze[dx][dz] == 12 ||
+										low[dx][dz] == 12 && maze[dx][dz] == 3;
+						float chance = 0;
+						if (stairs) chance = 0.3f + 0.7f * (y + 1) / y1;
+						else if (cross) chance = 0.2f + 0.3f * (y + 1) / y1;
+						if (chance <= 0) continue;
+						float val = rand.nextFloat();
+						if (val < chance) {
+							low[dx][dz] |= 16;
+							maze[dx][dz] |= 32;
+							for (int ddx = -m; ddx <= m; ddx++) {
+								for (int ddz = -m; ddz <= m; ddz++) {
+									marker[dx + ddx][dz + ddz] |= 1;
+								}
+							}
+						}
 					}
 				}
 			}
@@ -347,38 +391,13 @@ public class MazeDimHolder {
 				int[][] prevMarker = new int[r1][r1];
 				prefill(prevMarker, regions[0].maze);
 				int m = 2;
-				for (int i = 1; i < y1; i++) {
-					var low = regions[i - 1].maze;
-					var maze = regions[i].maze;
+				for (int y = 1; y < y1; y++) {
+					var low = regions[y - 1].maze;
+					var maze = regions[y].maze;
 					int[][] marker = new int[r1][r1];
 					prefill(marker, maze);
-					for (int dx = m; dx < r1 - m; dx++) {
-						for (int dz = m; dz < r1 - m; dz++) {
-							if ((marker[dx][dz] & 1) != 0 || (prevMarker[dx][dz] & 1) != 0)
-								continue;
-							boolean stairs = low[dx][dz] == 1 && maze[dx][dz] == 2 ||
-									low[dx][dz] == 2 && maze[dx][dz] == 1 ||
-									low[dx][dz] == 4 && maze[dx][dz] == 8 ||
-									low[dx][dz] == 8 && maze[dx][dz] == 4;
-							boolean cross =
-									low[dx][dz] == 3 && maze[dx][dz] == 12 ||
-											low[dx][dz] == 12 && maze[dx][dz] == 3;
-							float chance = 0;
-							if (stairs) chance = 0.3f + 0.7f * (i + 1) / y1;
-							else if (cross) chance = 0.2f + 0.3f * (i + 1) / y1;
-							if (chance <= 0) continue;
-							float val = rand.nextFloat();
-							if (val < chance) {
-								low[dx][dz] |= 16;
-								maze[dx][dz] |= 32;
-								for (int ddx = -m; ddx <= m; ddx++) {
-									for (int ddz = -m; ddz <= m; ddz++) {
-										marker[dx + ddx][dz + ddz] |= 1;
-									}
-								}
-							}
-						}
-					}
+					if (bossRoom[y] != 2)
+						fillLayer(prevMarker, marker, low, maze, m, y, rand);
 					prevMarker = marker;
 				}
 			}
