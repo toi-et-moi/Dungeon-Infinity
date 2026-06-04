@@ -278,7 +278,7 @@ public class MazeDimHolder {
 					private void markRoom(int x, int z) {
 						if (x < 0 || x >= r1 || z < 0 || z >= r1) return;
 						if (roomType[x][z] != 0) return;
-						if (rand.nextFloat() < 0.5) {
+						if (rand.nextFloat() < CellInterpreter.getRoomChance(maze[x][z])) {
 							roomType[x][z] = CellInterpreter.ROOM;
 							rooms.add(new int[]{x, z});
 						} else {
@@ -330,14 +330,28 @@ public class MazeDimHolder {
 				fillStairs(regions);
 			}
 
+			private void prefill(int[][] marker, int[][] maze) {
+				for (int dx = 0; dx < r1; dx++) {
+					for (int dz = 0; dz < r1; dz++) {
+						int cell = maze[dx][dz];
+						if (cell == 1 && x > 0) marker[x - 1][z] = 1;
+						if (cell == 2 && x < r1 - 1) marker[x + 1][z] = 1;
+						if (cell == 4 && z > 0) marker[x][z - 1] = 1;
+						if (cell == 8 && z < r1 - 1) marker[x][z + 1] = 1;
+					}
+				}
+			}
+
 			private void fillStairs(TopRegion.SubRegion[] regions) {
 				var rand = new Random(stairSeed);
 				int[][] prevMarker = new int[r1][r1];
+				prefill(prevMarker, regions[0].maze);
 				int m = 2;
 				for (int i = 1; i < y1; i++) {
 					var low = regions[i - 1].maze;
 					var maze = regions[i].maze;
 					int[][] marker = new int[r1][r1];
+					prefill(marker, maze);
 					for (int dx = m; dx < r1 - m; dx++) {
 						for (int dz = m; dz < r1 - m; dz++) {
 							if ((marker[dx][dz] & 1) != 0 || (prevMarker[dx][dz] & 1) != 0)

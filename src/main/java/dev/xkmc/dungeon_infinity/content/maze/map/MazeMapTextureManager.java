@@ -19,9 +19,9 @@ public class MazeMapTextureManager implements AutoCloseable {
 
 	private final Long2ObjectMap<MazeLevelMapSet> dims = new Long2ObjectOpenHashMap<>();
 
-	public MapTextureData get(long seed, int x, int y, int z) {
+	public MapTextureData getDetail(long seed, int x, int y, int z) {
 		var dim = dims.computeIfAbsent(seed, MazeLevelMapSet::new);
-		return dim.get(x, y, z);
+		return dim.getDetail(x, y, z);
 	}
 
 	@Override
@@ -34,22 +34,22 @@ public class MazeMapTextureManager implements AutoCloseable {
 	public static class MazeLevelMapSet implements AutoCloseable {
 
 		private final MazeDimHolder dim;
-		private final Long2ObjectMap<MapTextureData> map = new Long2ObjectOpenHashMap<>();
+		private final Long2ObjectMap<MapTextureData> detail = new Long2ObjectOpenHashMap<>();
 
 		public MazeLevelMapSet(long seed) {
 			this.dim = new MazeDimHolder(seed);
 		}
 
-		public MapTextureData get(int x, int y, int z) {
+		public MapTextureData getDetail(int x, int y, int z) {
 			var id = BlockPos.asLong(x, y, z);
-			return map.computeIfAbsent(id, _ -> new MapTextureData(dim, new Vec3i(x, y, z)));
+			return detail.computeIfAbsent(id, _ -> new MapTextureData(dim, new Vec3i(x, y, z)));
 		}
 
 		@Override
 		public void close() {
-			for (var e : map.values())
+			for (var e : detail.values())
 				e.close();
-			map.clear();
+			detail.clear();
 		}
 
 	}

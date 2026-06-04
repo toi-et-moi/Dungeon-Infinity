@@ -26,7 +26,7 @@ public class MazeMapScreen extends Screen {
 		int x = Math.floorDiv(pos.getX(), 16 * 25);
 		int z = Math.floorDiv(pos.getZ(), 16 * 25);
 		int y = Mth.clamp(pos.getY() / 8, 0, 31);
-		var tex = MazeMapTextureManager.get().get(seed, x, y, z);
+		var tex = MazeMapTextureManager.get().getDetail(seed, x, y, z);
 		int x0 = g.guiWidth() / 2, y0 = g.guiHeight() / 2;
 		float rate = Math.min(x0 / 64f, y0 / 64f) / 1.5f;
 		g.pose().pushMatrix();
@@ -36,7 +36,9 @@ public class MazeMapScreen extends Screen {
 		int px = pos.getX() - x * 16 * 25;
 		int pz = pos.getZ() - z * 16 * 25;
 		g.pose().translate(-64 + px / 16f * 5f, -64 + pz / 16f * 5f);
-		g.fill(-1, -1, 1, 1, 0xffff00ff);
+		float r = Mth.sin(((int) (System.currentTimeMillis() % 1000)) / 1000f * Math.PI) / 2 + 1;
+		g.pose().scale(r, r);
+		g.fill(-1, -1, 1, 1, 0xafff00ff);
 		g.pose().popMatrix();
 	}
 

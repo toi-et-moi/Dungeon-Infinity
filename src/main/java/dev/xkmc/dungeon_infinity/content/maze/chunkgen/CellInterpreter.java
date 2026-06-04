@@ -43,9 +43,20 @@ public class CellInterpreter {
 	public static int getCellFlags(int cell) {
 		if (isBossRoom(cell)) return 0;
 		return switch (getTemplateType(cell)) {
-			case 1, 6, 8, 9 -> 1;
-			case 7 -> 2;
+			case 1, 7, 8, 9 -> 1;
+			case 6 -> 2;
 			case 2, 3, 4, 5 -> 3;
+			default -> 0;
+		};
+	}
+
+
+	public static float getRoomChance(int cell) {
+		if (isBossRoom(cell)) return 0;
+		return switch (getTemplateType(cell)) {
+			case 5 -> 1;
+			case 4 -> 0.5f;
+			case 2, 3 -> 0.3f;
 			default -> 0;
 		};
 	}
@@ -86,10 +97,10 @@ public class CellInterpreter {
 			case 5, 6, 9, 10 -> 3;
 			case 7, 11, 13, 14 -> 4;
 			case 15 -> 5;
-			case 17, 18 -> 6;
-			case 33, 34 -> 7;
-			case 19, 20, 24, 28 -> 8;
-			case 36, 40, 35, 44 -> 9;
+			case 17, 18, 20, 24 -> 6;
+			case 33, 34, 36, 40 -> 7;
+			case 19, 28 -> 8;
+			case 35, 44 -> 9;
 			default -> 0;
 		};
 	}

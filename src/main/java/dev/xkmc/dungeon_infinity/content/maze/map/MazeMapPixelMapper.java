@@ -19,9 +19,10 @@ public class MazeMapPixelMapper {
 			return CACHE.get(cell);
 
 		int b = 0xff000000;
-		int a = 0xffffffff;
+		int w = 0xff5f5f5f;
+		int a = 0xffafafaf;
 		int g = 0xff7fff7f;
-		int y = 0xffffff7f;
+		int y = 0xffffaf0f;
 		int r = 0xff7fffff;
 
 		int[][] ans = new int[5][5];
@@ -57,7 +58,7 @@ public class MazeMapPixelMapper {
 			int c = (open & 16) != 0 ? y : (open & 32) != 0 ? g : a;
 			if (CellInterpreter.isHallway(room)) {
 				for (int i = 0; i < 5; i++)
-					Arrays.fill(ans[i], b);
+					Arrays.fill(ans[i], w);
 				if ((open & 1) != 0) for (int i = 0; i <= 2; i++) ans[i][2] = c;
 				if ((open & 2) != 0) for (int i = 2; i <= 4; i++) ans[i][2] = c;
 				if ((open & 4) != 0) for (int i = 0; i <= 2; i++) ans[2][i] = c;
@@ -65,12 +66,12 @@ public class MazeMapPixelMapper {
 			} else {
 				for (int i = 0; i < 5; i++)
 					Arrays.fill(ans[i], c);
-				ans[0][0] = ans[0][4] = ans[4][0] = ans[4][4] = b;
-				if ((open & 1) == 0) for (int i = 1; i <= 3; i++) ans[0][i] = b;
-				if ((open & 2) == 0) for (int i = 1; i <= 3; i++) ans[4][i] = b;
-				if ((open & 4) == 0) for (int i = 1; i <= 3; i++) ans[i][0] = b;
-				if ((open & 8) == 0) for (int i = 1; i <= 3; i++) ans[i][4] = b;
 			}
+			ans[0][0] = ans[0][4] = ans[4][0] = ans[4][4] = b;
+			if ((open & 1) == 0) for (int i = 1; i <= 3; i++) ans[0][i] = b;
+			if ((open & 2) == 0) for (int i = 1; i <= 3; i++) ans[4][i] = b;
+			if ((open & 4) == 0) for (int i = 1; i <= 3; i++) ans[i][0] = b;
+			if ((open & 8) == 0) for (int i = 1; i <= 3; i++) ans[i][4] = b;
 		}
 
 		CACHE.put(cell, ans);
