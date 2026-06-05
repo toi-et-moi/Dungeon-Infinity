@@ -1,8 +1,18 @@
 package dev.xkmc.dungeon_infinity.content.maze.chunkgen;
 
+import dev.xkmc.dungeon_infinity.content.maze.generator.IRandom;
+import dev.xkmc.dungeon_infinity.content.maze.generator.MazeConfig;
+import dev.xkmc.dungeon_infinity.content.maze.generator.MazeGen;
+
 import java.util.*;
 
 public class RoomProcessorStrategy {
+
+	private final int r1;
+
+	public RoomProcessorStrategy(int r1) {
+		this.r1 = r1;
+	}
 
 	public float getRoomChance(int cell) {
 		return switch (CellInterpreter.getTemplateType(cell)) {
@@ -29,12 +39,21 @@ public class RoomProcessorStrategy {
 		return 5;
 	}
 
+	public MazeGen genMaze(int rad, long regionSeed) {
+		MazeConfig config = new MazeConfig();
+		config.invariant = 2;
+		config.survive = 4;
+		config.invarianceRim = new int[][]{{0, 1, 2, 3, 4, 5, 6, 7}, {0, 4, 8, 12, 1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15}};
+		var ans = new MazeGen(rad / 2, IRandom.parse(new Random(regionSeed)), config, new MazeGen.Debugger());
+		ans.gen();
+		return ans;
+	}
+
 	public class StairGen {
 
-		private final int r1, y1;
+		private final int y1;
 
-		public StairGen(int r1, int y1) {
-			this.r1 = r1;
+		public StairGen(int y1) {
 			this.y1 = y1;
 		}
 
@@ -100,12 +119,10 @@ public class RoomProcessorStrategy {
 
 	public class Scanner {
 
-		private final int r1;
 		private final int[][] maze;
 		private final int[][] roomType;
 
-		public Scanner(int r1, int[][] maze, int[][] roomType) {
-			this.r1 = r1;
+		public Scanner(int[][] maze, int[][] roomType) {
 			this.maze = maze;
 			this.roomType = roomType;
 		}
@@ -158,7 +175,6 @@ public class RoomProcessorStrategy {
 
 	public class Marker {
 
-		private final int r1;
 		private final Random rand;
 		private final int[][] roomType;
 		private final int[][] maze;
@@ -166,8 +182,7 @@ public class RoomProcessorStrategy {
 		Queue<int[]> largeRooms = new ArrayDeque<>();
 		Queue<int[]> hallways = new ArrayDeque<>();
 
-		public Marker(int r1, Random rand, int[][] roomType, int[][] maze) {
-			this.r1 = r1;
+		public Marker(Random rand, int[][] roomType, int[][] maze) {
 			this.rand = rand;
 			this.roomType = roomType;
 			this.maze = maze;

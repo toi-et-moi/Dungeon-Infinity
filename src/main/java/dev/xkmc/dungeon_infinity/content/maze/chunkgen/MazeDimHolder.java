@@ -1,8 +1,5 @@
 package dev.xkmc.dungeon_infinity.content.maze.chunkgen;
 
-import dev.xkmc.dungeon_infinity.content.maze.generator.IRandom;
-import dev.xkmc.dungeon_infinity.content.maze.generator.MazeConfig;
-import dev.xkmc.dungeon_infinity.content.maze.generator.MazeGen;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.core.Direction;
@@ -21,7 +18,7 @@ public class MazeDimHolder {
 	private final int y1 = 16;
 	private final long seed;
 	private final Long2ObjectMap<RegionStack> stacks = new Long2ObjectOpenHashMap<>();
-	private final RoomProcessorStrategy strategy = new RoomProcessorStrategy();
+	private final RoomProcessorStrategy strategy = new RoomProcessorStrategy(r1);
 
 	public MazeDimHolder(long seed) {
 		this.seed = seed;
@@ -56,16 +53,6 @@ public class MazeDimHolder {
 		for (int i = 0; i < y1; i++) {
 			ans[i] = stack.getRegion(i).getRegion(cx, cz).getCellType(rx, rz);
 		}
-		return ans;
-	}
-
-	private MazeGen genMaze(int rad, long regionSeed) {
-		MazeConfig config = new MazeConfig();
-		config.invariant = 2;
-		config.survive = 4;
-		config.invarianceRim = new int[][]{{0, 1, 2, 3, 4, 5, 6, 7}, {0, 4, 8, 12, 1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15}};
-		var ans = new MazeGen(rad / 2, IRandom.parse(new Random(regionSeed)), config, new MazeGen.Debugger());
-		ans.gen();
 		return ans;
 	}
 
@@ -122,7 +109,7 @@ public class MazeDimHolder {
 				this.y = pos.getY();
 				long[] seeds = new long[3];
 				MazeRandHelper.getChildrenSeeds(seed, seeds);
-				int[][] maze = genMaze(r2, seeds[0]).ans;
+				int[][] maze = strategy.genMaze(r2, seeds[0]).ans;
 				TopWall x0 = getWall(pos.getY(), Direction.Axis.X);
 				TopWall x1 = get(pos.getX() + 1, pos.getZ()).getWall(pos.getY(), Direction.Axis.X);
 				TopWall z0 = getWall(pos.getY(), Direction.Axis.Z);
@@ -173,7 +160,7 @@ public class MazeDimHolder {
 					this.cz = cz;
 					long[] seeds = new long[2];
 					MazeRandHelper.getChildrenSeeds(seed, seeds);
-					this.maze = genMaze(r1, seeds[0]).ans;
+					this.maze = strategy.genMaze(r1, seeds[0]).ans;
 					roomSeed = seeds[1];
 					this.col = getColumn(cx, cz);
 					int x0 = getSubWall(cx, cz, Direction.Axis.X);
@@ -210,8 +197,8 @@ public class MazeDimHolder {
 					col.check();
 					var rand = new Random(roomSeed);
 					int[][] roomType = new int[r2][r2];
-					strategy.new Scanner(r1, maze, roomType).scan(rand);
-					strategy.new Marker(r1, rand, roomType, maze).mark();
+					strategy.new Scanner(maze, roomType).scan(rand);
+					strategy.new Marker(rand, roomType, maze).mark();
 					for (int x = 0; x < r1; x++) {
 						for (int z = 0; z < r1; z++) {
 							maze[x][z] |= CellInterpreter.getRoomTypeMask(maze[x][z], roomType[x][z]);
@@ -273,7 +260,7 @@ public class MazeDimHolder {
 				for (int i = 0; i < y1; i++) {
 					regions[i] = getRegion(i).getRegion(cx, cz);
 				}
-				strategy.new StairGen(r1, y1).fillStairs(regions, stairSeed, bossRoom);
+				strategy.new StairGen(y1).fillStairs(regions, stairSeed, bossRoom);
 			}
 
 		}

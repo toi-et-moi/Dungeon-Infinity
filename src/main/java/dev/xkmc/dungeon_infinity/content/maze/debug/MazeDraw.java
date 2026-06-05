@@ -20,7 +20,7 @@ import java.util.Random;
 public class MazeDraw {
 
 	public static void drawPNG(MazeGen maze, LeafMarker.LeafSetData global, LeafMarker[][] marks) throws IOException {
-		File f = new File("./out.png");
+		File f = new File("./temp/out.png");
 		BufferedImage bimg = new BufferedImage(maze.w * 5, maze.w * 5, BufferedImage.TYPE_3BYTE_BGR);
 		for (int i = 0; i < maze.w; i++)
 			for (int j = 0; j < maze.w; j++)
@@ -31,7 +31,7 @@ public class MazeDraw {
 	}
 
 	public static void main(String[] args) throws IOException {
-		File fx = new File("./log.log");
+		File fx = new File("./temp/log.log");
 		if (!fx.exists())
 			fx.createNewFile();
 		PrintStream ps = new PrintStream(fx);
@@ -39,6 +39,10 @@ public class MazeDraw {
 		// System.setOut(ps);
 		try {
 			MazeConfig config = new MazeConfig(); //readConfig();
+			config.invariant = 2;
+			config.survive = 4;
+			config.invarianceRim = new int[][]{{0, 1, 2, 3, 4, 5, 6, 7}, {0, 4, 8, 12, 1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15}};
+
 			perform(config);
 		} catch (Exception e) {
 			e.printStackTrace(ps);
@@ -47,7 +51,7 @@ public class MazeDraw {
 	}
 
 	public static void perform(MazeConfig config) throws IOException {
-		MazeGen maze = new MazeGen(7, IRandom.parse(new Random()), config, new MazeGen.Debugger());
+		MazeGen maze = new MazeGen(12, IRandom.parse(new Random()), config, new MazeGen.Debugger());
 		maze.gen();
 		for (MazeRegistry.Entry<?, ?> ent : MazeRegistry.LIST) {
 			double ans = ent.execute(maze.ans, maze.r, maze.r);
@@ -58,7 +62,8 @@ public class MazeDraw {
 	}
 
 	public static MazeConfig readConfig() throws IOException {
-		File in = new File("./in.txt");
+		File in = new File("./temp/in.txt");
+		if (!in.exists())return new MazeConfig();
 		List<String> list = Files.readAllLines(in.toPath());
 		String[] l0 = list.get(0).split(":")[1].trim().split(" ");
 		int[] i0 = new int[l0.length];
