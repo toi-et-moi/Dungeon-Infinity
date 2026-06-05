@@ -2,6 +2,7 @@ package dev.xkmc.dungeon_infinity.content.maze.cap;
 
 import dev.xkmc.l2core.capability.player.PlayerCapabilityTemplate;
 import dev.xkmc.l2serial.serialization.marker.SerialClass;
+import dev.xkmc.l2serial.serialization.marker.SerialField;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -10,11 +11,11 @@ import net.minecraft.world.entity.player.Player;
 @SerialClass
 public class MazeHistory extends PlayerCapabilityTemplate<MazeHistory> {
 
+	@SerialField
 	public final Long2ObjectOpenHashMap<Visit> data = new Long2ObjectOpenHashMap<>();
 
 	@Override
 	public void tick(Player player) {
-		if (!player.level().isClientSide()) return;
 		var pos = player.blockPosition();
 		int x = Math.floorDiv(pos.getX(), 16 * 25);
 		int z = Math.floorDiv(pos.getZ(), 16 * 25);
@@ -31,14 +32,18 @@ public class MazeHistory extends PlayerCapabilityTemplate<MazeHistory> {
 		return data.computeIfAbsent(key, k -> new Visit());
 	}
 
-
+	@SerialClass
 	public static class Visit {
 
 		private static final int R = 25, MAX = 80;
 
+		@SerialField
 		private final byte[] visibleGrid = new byte[MAX];
+		@SerialField
 		private final byte[] visitedGrid = new byte[MAX];
+		@SerialField
 		private int visited = 0, visible = 0;
+		@SerialField
 		private int revision = 0;
 
 		public int getVer() {

@@ -197,18 +197,22 @@ public class RoomProcessorStrategy {
 		public void mark() {
 			for (int x = 0; x < r1; x++) {
 				for (int z = 0; z < r1; z++) {
-					if (maze[x][z] >= 64) {
+					if (maze[x][z] >= 64)
 						roomType[x][z] = CellInterpreter.SPECIAL;
-					} else if (roomType[x][z] == 0) {
-						int cell = maze[x][z];
-						if (CellInterpreter.getTemplateType(cell) == 1) {
-							roomType[x][z] = CellInterpreter.ROOM + 1;
-						} else {
-							int flag = CellInterpreter.getCellFlags(cell);
-							if (flag != 3) {
-								roomType[x][z] = CellInterpreter.getRoomMarker(cell, flag);
-							}
-						}
+					if (roomType[x][z] != 0) continue;
+					int cell = maze[x][z];
+					if (CellInterpreter.getTemplateType(cell) == 1) {
+						roomType[x][z] = CellInterpreter.ROOM + 1;
+						continue;
+					}
+					if ((cell & 1) != 0 && x == 0 || (cell & 2) != 0 && x == r1 - 1 ||
+							(cell & 4) != 0 && z == 0 || (cell & 8) != 0 && z == r1 - 1
+					) {
+						roomType[x][z] = CellInterpreter.HALLWAY;
+					}
+					int flag = CellInterpreter.getCellFlags(cell);
+					if (flag != 3) {
+						roomType[x][z] = CellInterpreter.getRoomMarker(cell, flag);
 					}
 				}
 			}
@@ -280,6 +284,50 @@ public class RoomProcessorStrategy {
 		}
 
 	}
+
+	public static class Itr {
+
+		private final int r1 = 25;
+		private final Queue<int[]> queue = new ArrayDeque<>();
+		private final int[][] maze;
+		private final int[][] marker = new int[r1][r1];
+
+		public Itr(int[][] maze) {
+			this.maze = maze;
+		}
+
+		private void tryAdd(int x, int z) {
+			if (marker[x][z] > 0) return;
+			marker[x][z] = 1;
+			int cell = maze[x][z];
+			if (CellInterpreter.getRoomType(cell) < CellInterpreter.ROOM) return;
+			queue.add(new int[]{x, z});
+		}
+
+		public List<int[]> findRooms(int x, int z) {
+			queue.add(new int[]{x, z});
+			marker[x][z] = 1;
+			List<int[]> list = new ArrayList<>();
+			while (!queue.isEmpty()) {
+				var p = queue.poll();
+				list.add(p);
+				int px = p[0];
+				int pz = p[1];
+				int c = maze[px][pz];
+				if ((c & 1) != 0 && px > 0) tryAdd(px - 1, pz);
+				if ((c & 2) != 0 && px < r1 - 1) tryAdd(px + 1, pz);
+				if ((c & 4) != 0 && pz > 0) tryAdd(px, pz - 1);
+				if ((c & 8) != 0 && pz > r1 - 1) tryAdd(px, pz + 1);
+			}
+			return list;
+		}
+
+	}
+
+	public static List<int[]> findRooms(int[][] maze, int x, int z) {
+		return new Itr(maze).findRooms(x, z);
+	}
+
 
 }
 
