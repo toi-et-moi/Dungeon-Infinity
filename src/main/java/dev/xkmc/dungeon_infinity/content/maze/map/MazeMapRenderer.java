@@ -13,7 +13,7 @@ public class MazeMapRenderer {
 	public static void renderMap(long seed, BlockPos pos, PoseStack pose, SubmitNodeCollector col, int light) {
 		int x = Math.floorDiv(pos.getX(), 16 * 25);
 		int z = Math.floorDiv(pos.getZ(), 16 * 25);
-		int y = Mth.clamp(pos.getY() / 8, 0, 31);
+		int y = Mth.clamp(pos.getY() / 16, 0, 15);
 		var tex = MazeMapTextureManager.get().getDetail(seed, x, y, z);
 		col.submitCustomGeometry(pose, RenderTypes.text(tex.id), (mat, buffer) -> {
 			buffer.addVertex(mat, 1, 126, -0.01F).setColor(-1).setUv(0, 125 / 128f).setLight(light);

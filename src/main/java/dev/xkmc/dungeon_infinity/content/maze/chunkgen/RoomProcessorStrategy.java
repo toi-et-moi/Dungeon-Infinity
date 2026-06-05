@@ -25,6 +25,10 @@ public class RoomProcessorStrategy {
 		return 0.8f;
 	}
 
+	public int getBossRoomCount() {
+		return 5;
+	}
+
 	public class StairGen {
 
 		private final int r1, y1;

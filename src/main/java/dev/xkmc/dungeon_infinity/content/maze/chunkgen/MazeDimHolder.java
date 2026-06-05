@@ -18,7 +18,7 @@ public class MazeDimHolder {
 
 	private final int r1 = 25;
 	private final int r2 = 25;
-	private final int y1 = 32;
+	private final int y1 = 16;
 	private final long seed;
 	private final Long2ObjectMap<RegionStack> stacks = new Long2ObjectOpenHashMap<>();
 	private final RoomProcessorStrategy strategy = new RoomProcessorStrategy();
@@ -237,7 +237,7 @@ public class MazeDimHolder {
 		public class MazeColumn {
 
 			private final int cx, cz;
-			private final int[] bossRoom = new int[32];
+			private final int[] bossRoom = new int[y1];
 			private final long stairSeed;
 
 			private boolean checked = false;
@@ -247,19 +247,22 @@ public class MazeDimHolder {
 				this.cz = cz;
 				var rand = new Random(seed);
 				stairSeed = rand.nextLong();
-				int[] spaces = new int[6];
-				Arrays.fill(spaces, 2);
-				for (int i = 0; i < 5; i++) {
-					int layer = rand.nextInt(6);
+				int count = strategy.getBossRoomCount();
+				int space = (y1 - count * 2) / (count + 1);
+				int[] spaces = new int[count + 1];
+				Arrays.fill(spaces, space);
+				int rem = y1 - count * 2 - space * (count + 1);
+				for (int i = 0; i < rem; i++) {
+					int layer = rand.nextInt(spaces.length);
 					spaces[layer]++;
 				}
 				int layer = 0;
-				for (int i = 0; i < 5; i++) {
+				for (int i = 0; i < count; i++) {
 					int e = spaces[i];
 					layer += e;
-					for (int j = 0; j < 3; j++)
-						bossRoom[layer + j] = j + 1;
-					layer += 3;
+					bossRoom[layer] = 1;
+					bossRoom[layer + 1] = 2;
+					layer += 2;
 				}
 			}
 

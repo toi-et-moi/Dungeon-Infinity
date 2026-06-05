@@ -29,7 +29,7 @@ public class ChunkFiller {
 		var col = maze.getColumn(pos.x(), pos.z());
 		for (int i = 0; i < col.length; i++) {
 			long seed = r.setDecorationSeed(level.getSeed(), pos.x(), pos.z());
-			var p = new BlockPos(pos.x() << 4, i << 3, pos.z() << 4);
+			var p = new BlockPos(pos.x() << 4, i << 4, pos.z() << 4);
 			fillCell(col[i], p, level, access, r, templates);
 		}
 	}
@@ -67,74 +67,5 @@ public class ChunkFiller {
 		o = o.offset(offset);
 		template.placeInWorld(level, o, o, settings, random, 18);
 	}
-
-	public void fillCellTest(int cell, BlockPos o, ChunkAccess access, RandomState random) {
-		BlockPos.MutableBlockPos m = new BlockPos.MutableBlockPos();
-		boolean doCeiling = o.getY() + 7 < 255;
-		if (cell < 64) {
-			var state = DIItems.MAZESTONE.getDefaultState();
-			for (int i = 0; i < 8; i++) {
-				access.setBlockState(m.setWithOffset(o, 0, i, 0), state);
-				access.setBlockState(m.setWithOffset(o, 0, i, 15), state);
-				access.setBlockState(m.setWithOffset(o, 15, i, 0), state);
-				access.setBlockState(m.setWithOffset(o, 15, i, 15), state);
-			}
-			for (int i = 0; i < 16; i++) {
-				access.setBlockState(m.setWithOffset(o, i, 0, 0), state);
-				access.setBlockState(m.setWithOffset(o, i, 0, 15), state);
-				access.setBlockState(m.setWithOffset(o, 0, 0, i), state);
-				access.setBlockState(m.setWithOffset(o, 15, 0, i), state);
-				if (doCeiling) {
-					access.setBlockState(m.setWithOffset(o, i, 7, 0), state);
-					access.setBlockState(m.setWithOffset(o, i, 7, 15), state);
-					access.setBlockState(m.setWithOffset(o, 0, 7, i), state);
-					access.setBlockState(m.setWithOffset(o, 15, 7, i), state);
-				}
-				for (int j = 1; j < 16; j++) {
-					if ((cell & 32) == 0) access.setBlockState(m.setWithOffset(o, i, 0, j), state);
-					if ((cell & 16) == 0 && doCeiling) access.setBlockState(m.setWithOffset(o, i, 7, j), state);
-				}
-				for (int y = 1; y < 8; y++) {
-					if (doCeiling || y < 7) {
-						if ((cell & 1) == 0) access.setBlockState(m.setWithOffset(o, 0, y, i), state);
-						if ((cell & 2) == 0) access.setBlockState(m.setWithOffset(o, 15, y, i), state);
-						if ((cell & 4) == 0) access.setBlockState(m.setWithOffset(o, i, y, 0), state);
-						if ((cell & 8) == 0) access.setBlockState(m.setWithOffset(o, i, y, 15), state);
-					}
-				}
-			}
-			if ((cell & 16) != 0 && (cell == 1 || cell == 2 || cell == 4 || cell == 8)) {
-				for (int y = 1; y < 8; y++) {
-					for (int i = y - 1; i < 15; i++) {
-						for (int j = 1; j < 15; j++) {
-							if ((cell & 1) != 0) access.setBlockState(m.setWithOffset(o, i, y, j), state);
-							if ((cell & 2) != 0) access.setBlockState(m.setWithOffset(o, 15 - i, y, j), state);
-							if ((cell & 4) != 0) access.setBlockState(m.setWithOffset(o, j, y, i), state);
-							if ((cell & 8) != 0) access.setBlockState(m.setWithOffset(o, j, y, 15 - i), state);
-						}
-					}
-				}
-			}
-		} else {
-			var state = DIItems.MAZESTONE.getDefaultState();
-			int room = (cell >> 6) - 1;
-			int layer = room / 9;
-			int x = room % 9 / 3;
-			int z = room % 3;
-			for (int i = 0; i < 16; i++) {
-				for (int j = 0; j < 16; j++) {
-					if (layer == 0) access.setBlockState(m.setWithOffset(o, i, 0, j), state);
-					if (layer == 2 && doCeiling) access.setBlockState(m.setWithOffset(o, i, 7, j), state);
-				}
-				for (int y = 0; y < 8; y++) {
-					if (x == 0 && (cell & 1) == 0) access.setBlockState(m.setWithOffset(o, 0, y, i), state);
-					if (x == 2 && (cell & 2) == 0) access.setBlockState(m.setWithOffset(o, 15, y, i), state);
-					if (z == 0 && (cell & 4) == 0) access.setBlockState(m.setWithOffset(o, i, y, 0), state);
-					if (z == 2 && (cell & 8) == 0) access.setBlockState(m.setWithOffset(o, i, y, 15), state);
-				}
-			}
-		}
-	}
-
 
 }

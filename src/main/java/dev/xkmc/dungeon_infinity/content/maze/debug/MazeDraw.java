@@ -1,4 +1,4 @@
-package dev.xkmc.dungeon_infinity.content.maze.main;
+package dev.xkmc.dungeon_infinity.content.maze.debug;
 
 import dev.xkmc.dungeon_infinity.content.maze.generator.IRandom;
 import dev.xkmc.dungeon_infinity.content.maze.generator.MazeConfig;
