@@ -45,6 +45,7 @@ public class CellInterpreter {
 
 
 	public static int getRoomTypeMask(int cell, int marker) {
+		if (marker > ROOM) marker = ROOM;
 		return (marker - 1) << 11;
 	}
 
@@ -65,16 +66,6 @@ public class CellInterpreter {
 			case 1, 7, 8, 9 -> 1;
 			case 6 -> 2;
 			case 2, 3, 4, 5 -> 3;
-			default -> 0;
-		};
-	}
-
-
-	public static float getRoomChance(int cell) {
-		return switch (getTemplateType(cell)) {
-			case 5 -> 1;
-			case 4 -> 0.5f;
-			case 2, 3 -> 0.3f;
 			default -> 0;
 		};
 	}
@@ -173,9 +164,12 @@ public class CellInterpreter {
 				case 6 -> CORNER.with(Rotation.CLOCKWISE_180);
 				case 10 -> CORNER.with(Rotation.COUNTERCLOCKWISE_90);
 				case 13 -> quad == 2 ? T_WAY : T_WAY.with(Rotation.NONE, Mirror.LEFT_RIGHT);
-				case 7 -> quad == 3 ? T_WAY.with(Rotation.CLOCKWISE_90) : T_WAY.with(Rotation.CLOCKWISE_90, Mirror.LEFT_RIGHT);
-				case 14 -> quad == 1 ? T_WAY.with(Rotation.CLOCKWISE_180) : T_WAY.with(Rotation.CLOCKWISE_180, Mirror.LEFT_RIGHT);
-				case 11 -> quad == 0 ? T_WAY.with(Rotation.COUNTERCLOCKWISE_90) : T_WAY.with(Rotation.COUNTERCLOCKWISE_90, Mirror.LEFT_RIGHT);
+				case 7 ->
+						quad == 3 ? T_WAY.with(Rotation.CLOCKWISE_90) : T_WAY.with(Rotation.CLOCKWISE_90, Mirror.LEFT_RIGHT);
+				case 14 ->
+						quad == 1 ? T_WAY.with(Rotation.CLOCKWISE_180) : T_WAY.with(Rotation.CLOCKWISE_180, Mirror.LEFT_RIGHT);
+				case 11 ->
+						quad == 0 ? T_WAY.with(Rotation.COUNTERCLOCKWISE_90) : T_WAY.with(Rotation.COUNTERCLOCKWISE_90, Mirror.LEFT_RIGHT);
 				default -> MISSING;
 			};
 			return ans.room("quad/");
