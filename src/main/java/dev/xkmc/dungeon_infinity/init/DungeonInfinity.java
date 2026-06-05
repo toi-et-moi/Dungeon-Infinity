@@ -6,6 +6,7 @@ import dev.xkmc.dungeon_infinity.init.data.DIConfigGen;
 import dev.xkmc.dungeon_infinity.init.data.DIDimensionGen;
 import dev.xkmc.dungeon_infinity.init.data.DILang;
 import dev.xkmc.dungeon_infinity.init.reg.DIItems;
+import dev.xkmc.dungeon_infinity.init.reg.DIMeta;
 import dev.xkmc.dungeon_infinity.init.reg.DIWorldGen;
 import dev.xkmc.l2core.init.reg.registrate.L2Registrate;
 import dev.xkmc.l2core.init.reg.simple.Reg;
@@ -38,6 +39,7 @@ public class DungeonInfinity {
 
 	public DungeonInfinity(IEventBus bus) {
 		DIItems.register();
+		DIMeta.register();
 		DIWorldGen.register();
 		DIConfig.init();
 

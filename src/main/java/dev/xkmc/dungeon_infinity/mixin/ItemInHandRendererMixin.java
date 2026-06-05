@@ -79,8 +79,7 @@ public abstract class ItemInHandRendererMixin {
 			buffer.addVertex(mat, -7.0F, -7.0F, 0.0F).setColor(-1).setUv(0.0F, 0.0F).setLight(light);
 		});
 		if (seed != null) {
-			var pos = player.blockPosition();
-			MazeMapRenderer.renderMap(seed, pos, pose, col, light);
+			MazeMapRenderer.renderMap(seed, player, pose, col, light);
 		}
 		ci.cancel();
 	}

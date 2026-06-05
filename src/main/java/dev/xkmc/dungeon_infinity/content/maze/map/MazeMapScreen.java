@@ -1,5 +1,6 @@
 package dev.xkmc.dungeon_infinity.content.maze.map;
 
+import dev.xkmc.dungeon_infinity.init.reg.DIMeta;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
@@ -27,15 +28,23 @@ public class MazeMapScreen extends Screen {
 		int z = Math.floorDiv(pos.getZ(), 16 * 25);
 		int y = Mth.clamp(pos.getY() / 16, 0, 15);
 		var tex = MazeMapTextureManager.get().getDetail(seed, x, y, z);
+		var fog = MazeMapTextureManager.get().getFog(seed, x, y, z);
+		fog.update(DIMeta.HISTORY.type().getOrCreate(player).getOrCreate(x, y, z));
 		int x0 = g.guiWidth() / 2, y0 = g.guiHeight() / 2;
 		float rate = Math.min(x0 / 64f, y0 / 64f) / 1.5f;
 		g.pose().pushMatrix();
 		g.pose().translate(x0, y0);
 		g.pose().scale(rate, rate);
-		g.blit(RenderPipelines.GUI_TEXTURED, tex.id, -63, -63, 0, 0, 125, 125, 128, 128);
+		g.pose().translate(-63, -63);
+		g.blit(RenderPipelines.GUI_TEXTURED, tex.id, 0, 0, 0, 0, 125, 125, 128, 128);
+		g.pose().pushMatrix();
+		g.pose().scale(5, 5);
+		if (!player.isCreative() || !player.isShiftKeyDown())
+			g.blit(RenderPipelines.GUI_TEXTURED, fog.id, 0, 0, 0, 0, 25, 25, 32, 32);
+		g.pose().popMatrix();
 		int px = pos.getX() - x * 16 * 25;
 		int pz = pos.getZ() - z * 16 * 25;
-		g.pose().translate(-63 + px / 16f * 5f, -63 + pz / 16f * 5f);
+		g.pose().translate(px / 16f * 5f, pz / 16f * 5f);
 		float r = Mth.sin(((int) (System.currentTimeMillis() % 1000)) / 1000f * Math.PI) / 2 + 1;
 		g.pose().scale(r, r);
 		;

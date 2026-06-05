@@ -1,6 +1,7 @@
 package dev.xkmc.dungeon_infinity.content.maze.map;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import dev.xkmc.dungeon_infinity.content.maze.cap.MazeHistory;
 import dev.xkmc.dungeon_infinity.content.maze.chunkgen.MazeDimHolder;
 import dev.xkmc.dungeon_infinity.init.DungeonInfinity;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -24,6 +25,11 @@ public class MazeMapTextureManager implements AutoCloseable {
 		return dim.getDetail(x, y, z);
 	}
 
+	public FogTextureData getFog(long seed, int x, int y, int z) {
+		var dim = dims.computeIfAbsent(seed, MazeLevelMapSet::new);
+		return dim.getFog(x, y, z);
+	}
+
 	@Override
 	public void close() {
 		for (var e : dims.values())
@@ -35,6 +41,7 @@ public class MazeMapTextureManager implements AutoCloseable {
 
 		private final MazeDimHolder dim;
 		private final Long2ObjectMap<MapTextureData> detail = new Long2ObjectOpenHashMap<>();
+		private final Long2ObjectMap<FogTextureData> fog = new Long2ObjectOpenHashMap<>();
 
 		public MazeLevelMapSet(long seed) {
 			this.dim = new MazeDimHolder(seed);
@@ -43,6 +50,11 @@ public class MazeMapTextureManager implements AutoCloseable {
 		public MapTextureData getDetail(int x, int y, int z) {
 			var id = BlockPos.asLong(x, y, z);
 			return detail.computeIfAbsent(id, _ -> new MapTextureData(dim, new Vec3i(x, y, z)));
+		}
+
+		public FogTextureData getFog(int x, int y, int z) {
+			var id = BlockPos.asLong(x, y, z);
+			return fog.computeIfAbsent(id, _ -> new FogTextureData(new Vec3i(x, y, z)));
 		}
 
 		@Override
@@ -98,6 +110,46 @@ public class MazeMapTextureManager implements AutoCloseable {
 				}
 			}
 
+			this.texture.upload();
+		}
+
+		@Override
+		public void close() {
+			texture.close();
+		}
+	}
+
+	public static class FogTextureData implements AutoCloseable {
+
+		private final DynamicTexture texture;
+		private final Vec3i pos;
+
+		public final Identifier id;
+
+		public int w, h;
+		public int[][] data;
+
+		private int revision = -1;
+
+		public FogTextureData(Vec3i pos) {
+			this.pos = pos;
+			w = 25;
+			h = 25;
+			data = new int[32][32];
+			this.texture = new DynamicTexture(() -> "Maze Fog " + pos, 32, 32, true);
+			this.id = DungeonInfinity.loc("maze_fog/" + Long.toUnsignedString(new BlockPos(pos).asLong(), 16));
+			Minecraft.getInstance().getTextureManager().register(id, texture);
+		}
+
+		public void update(MazeHistory.Visit visit) {
+			if (visit.getVer() == revision) return;
+			revision = visit.getVer();
+			NativeImage pixels = this.texture.getPixels();
+			for (int y = 0; y < 25; y++) {
+				for (int x = 0; x < 25; x++) {
+					pixels.setPixel(x, y, visit.isVisible(x, y) ? 0 : 0xff7f7f7f);
+				}
+			}
 			this.texture.upload();
 		}
 
