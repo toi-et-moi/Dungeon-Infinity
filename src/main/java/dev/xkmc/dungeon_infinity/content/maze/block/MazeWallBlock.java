@@ -183,17 +183,24 @@ public class MazeWallBlock {
 					continue;
 				BlockState nei = level.getBlockState(next);
 				if (self.getValue(MAP.get(dire))) {
-					if (nei.getBlock() != self.getBlock()) {
+					if (!isAffinitive(self, nei)) {
 						nei = getStateForPlacement(rep, level, next);
 						level.setBlock(next, nei, 18);
 					}
-				} else if (nei.getBlock() == self.getBlock()) {
+				} else if (isAffinitive(self, nei)) {
 					self = self.setValue(MAP.get(dire), true);
 				}
 			}
 			if (self != state) {
 				level.setBlock(pos, self, 18);
 			}
+		}
+
+		private boolean isAffinitive(BlockState self, BlockState neighbor) {
+			return self.getBlock() == neighbor.getBlock()
+					|| neighbor.getBlock() == Blocks.BEDROCK
+					|| neighbor.getBlock() == Blocks.BARRIER
+					|| neighbor.getBlock() == Blocks.STRUCTURE_VOID;
 		}
 
 		@Override
