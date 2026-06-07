@@ -1,13 +1,38 @@
 package dev.xkmc.dungeon_infinity.content.maze.cap;
 
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MobRoomIns {
 
-	private final SectionRoom[][][] rooms;
+	private final @Nullable SectionRoom[][][] rooms;
+	private final MobRoomData data;
 
-	public MobRoomIns(SectionRoom[][][] rooms) {
+	final List<SectionRoom> list = new ArrayList<>();
+	final SectionRoom holder;
+
+	public MobRoomIns(@Nullable SectionRoom[][][] rooms) {
 		this.rooms = rooms;
+		for (SectionRoom[][] ess : rooms) {
+			for (SectionRoom[] es : ess) {
+				for (SectionRoom room : es) {
+					if (room == null) continue;
+					list.add(room);
+					room.ins = this;
+				}
+			}
+		}
+		holder = list.getFirst();
+		if (holder.data == null)
+			holder.data = new MobRoomData();
+		data = holder.data;
 	}
 
 	public void setWall(boolean gen) {
@@ -35,4 +60,19 @@ public class MobRoomIns {
 		}
 	}
 
+	public void tick(SectionRoom origin, ServerPlayer sp) {
+		if (data.isDefeated()) return;
+		data.track(sp);
+		data.tick(this);
+	}
+
+	public boolean contains(LivingEntity sp) {
+		var p = sp.position().add(sp.getBbHeight() / 2);
+		for (var r : list) {
+			var origin = new Vec3(r.getBlockPos());
+			var box = new AABB(origin, origin.add(16, 16, 16));
+			if (box.contains(p)) return true;
+		}
+		return false;
+	}
 }

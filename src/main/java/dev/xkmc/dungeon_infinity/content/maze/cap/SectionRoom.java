@@ -11,9 +11,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -50,6 +53,30 @@ public class SectionRoom {
 
 	@SerialField
 	public boolean walled = false;
+
+	@SerialField
+	public @Nullable MobRoomData data = null;
+
+	@Nullable MobRoomIns ins = null;
+
+	public ServerLevel level() {
+		return sl;
+	}
+
+	public BlockPos getBlockPos() {
+		return pos.origin();
+	}
+
+	public boolean isActive() {
+		return walled;
+	}
+
+	public MobRoomIns getOrCreateActiveMobRoomInstance() {
+		if (ins != null) return ins;
+		var room = findRoom();
+		ins = new MobRoomIns(room);
+		return ins;
+	}
 
 	public void setWall(Direction dir, boolean gen) {
 		walled = gen;
@@ -115,6 +142,21 @@ public class SectionRoom {
 			ans[p[0] - x0][0][p[1] - z0] = RoomDataHolder.get(sl, pos.offset(p[0] - x, 0, p[1] - z));
 		}
 		return ans;
+	}
+
+	public void tick(MazeHistory.Visit visit, MazePos pos, ServerPlayer sp) {
+		int cell = maze[x][z];
+		if (visit.isDefeated(pos)) return;
+		if (CellInterpreter.isBossRoom(cell) ||
+				CellInterpreter.isQuadRoom(cell) ||
+				CellInterpreter.getRoomType(cell) >= CellInterpreter.ROOM) {
+			var origin = new Vec3(this.pos.origin());
+			var box = new AABB(origin.add(2, 2, 2), origin.add(14, 14, 14));
+			if (box.contains(sp.position().add(sp.getBbHeight() / 2))) {
+				var ins = getOrCreateActiveMobRoomInstance();
+				ins.tick(this, sp);
+			}
+		}
 	}
 
 }

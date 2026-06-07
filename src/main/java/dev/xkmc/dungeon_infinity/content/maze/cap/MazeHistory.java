@@ -4,6 +4,8 @@ import dev.xkmc.l2core.capability.player.PlayerCapabilityTemplate;
 import dev.xkmc.l2serial.serialization.marker.SerialClass;
 import dev.xkmc.l2serial.serialization.marker.SerialField;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import net.minecraft.core.SectionPos;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.Map;
@@ -19,6 +21,11 @@ public class MazeHistory extends PlayerCapabilityTemplate<MazeHistory> {
 		var pos = MazePos.map(player.blockPosition());
 		var ent = data.computeIfAbsent(pos.key(), k -> new Visit());
 		ent.visit(pos);
+		if (player instanceof ServerPlayer sp) {
+			var sec = RoomDataHolder.get(sp.level(), SectionPos.of(sp.blockPosition()));
+			if (sec != null)
+				sec.tick(ent, pos, sp);
+		}
 	}
 
 	public Visit getOrCreate(MazePos pos) {
