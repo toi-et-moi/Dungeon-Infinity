@@ -4,9 +4,15 @@ import dev.xkmc.dungeon_infinity.content.maze.chunkgen.CellInterpreter;
 import dev.xkmc.dungeon_infinity.content.maze.chunkgen.MazeChunkGenerator;
 import dev.xkmc.dungeon_infinity.content.maze.chunkgen.MazeDimHolder;
 import dev.xkmc.dungeon_infinity.content.maze.chunkgen.RoomProcessorStrategy;
+import dev.xkmc.dungeon_infinity.init.reg.DIItems;
 import dev.xkmc.l2serial.serialization.marker.SerialClass;
+import dev.xkmc.l2serial.serialization.marker.SerialField;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.jspecify.annotations.Nullable;
 
@@ -35,6 +41,32 @@ public class SectionRoom {
 			maze = dim.getRegion(rx, pos.y(), rz);
 			x = pos.x() - rx;
 			z = pos.z() - rz;
+		}
+	}
+
+	public int getCell() {
+		return maze[x][z];
+	}
+
+	@SerialField
+	public boolean walled = false;
+
+	public void setWall(Direction dir, boolean gen) {
+		walled = gen;
+		var origin = pos.origin();
+		var src = origin.offset(dir.getStepX() > 0 ? 15 : 0, dir.getStepY() > 0 ? 15 : 0, dir.getStepZ() > 0 ? 15 : 0);
+		var dst = src.offset(dir.getStepX() == 0 ? 15 : 0, dir.getStepY() == 0 ? 15 : 0, dir.getStepZ() == 0 ? 15 : 0);
+		var mpos = new BlockPos.MutableBlockPos();
+		var block = gen ? DIItems.FORCEFIELD_BLOCK.getDefaultState() : DIItems.BROKEN_FORCEFIELD.getDefaultState();
+		var wall = gen ? DIItems.FORCEFIELD.getDefaultState().setValue(BlockStateProperties.FACING, dir.getOpposite()) : Blocks.AIR.defaultBlockState();
+		for (int x = src.getX(); x <= dst.getX(); x++) {
+			for (int y = src.getY(); y <= dst.getY(); y++) {
+				for (int z = src.getZ(); z <= dst.getZ(); z++) {
+					mpos.set(x, y, z);
+					var old = lc.getBlockState(mpos);
+					lc.setBlockState(mpos, old.isSolid() ? block : wall);
+				}
+			}
 		}
 	}
 
