@@ -114,11 +114,9 @@ public class CellInterpreter {
 		};
 	}
 
-	public static final CellInstance SKIP = new CellInstance("skip");
-	public static final CellInstance MISSING = new CellInstance("missing");
-	private static final CellInstance BOSS_CENTER = new CellInstance("boss/center");
-	private static final CellInstance BOSS_SIDE = new CellInstance("boss/side");
-	private static final CellInstance BOSS_CORNER = new CellInstance("boss/corner");
+	public static final CellInstance SKIP = new CellInstance("skip", 0);
+	public static final CellInstance MISSING = new CellInstance("missing", 0);
+	private static final CellInstance BOSS = new CellInstance("boss", 48, 16, 16);
 	private static final CellInstance END = new CellInstance("end");
 	private static final CellInstance STRAIGHT = new CellInstance("straight");
 	private static final CellInstance CORNER = new CellInstance("corner");
@@ -126,6 +124,7 @@ public class CellInterpreter {
 	private static final CellInstance CROSS = new CellInstance("cross");
 	private static final CellInstance STAIRS = new CellInstance("stairs");
 	private static final CellInstance CROSS_STAIRS = new CellInstance("cross_stairs");
+	private static final CellInstance QUAD = new CellInstance("quad", 32, 16, 0);
 
 	public static boolean isHallway(int room) {
 		return room == 1;
@@ -142,37 +141,19 @@ public class CellInterpreter {
 	public static CellInstance getTemplate(int cell) {
 		if (isBossRoom(cell)) {
 			int room = getBossRoom(cell);
-			return switch (room) {
-				case 0 -> BOSS_CORNER;
-				case 1 -> BOSS_SIDE;
-				case 2 -> BOSS_CORNER.with(Rotation.COUNTERCLOCKWISE_90);
-				case 3 -> BOSS_SIDE.with(Rotation.CLOCKWISE_90);
-				case 4 -> BOSS_CENTER;
-				case 5 -> BOSS_SIDE.with(Rotation.COUNTERCLOCKWISE_90);
-				case 6 -> BOSS_CORNER.with(Rotation.CLOCKWISE_90);
-				case 7 -> BOSS_SIDE.with(Rotation.CLOCKWISE_180);
-				case 8 -> BOSS_CORNER.with(Rotation.CLOCKWISE_180);
-				default -> SKIP;
-			};
+			return room == 4 ? BOSS : SKIP;
 		}
 		if (isQuadRoom(cell)) {
 			int quad = getQuadRoom(cell);
 			int open = getOpenings(cell);
-			var ans = switch (open) {
-				case 9 -> CORNER;
-				case 5 -> CORNER.with(Rotation.CLOCKWISE_90);
-				case 6 -> CORNER.with(Rotation.CLOCKWISE_180);
-				case 10 -> CORNER.with(Rotation.COUNTERCLOCKWISE_90);
-				case 13 -> quad == 2 ? T_WAY : T_WAY.with(Rotation.NONE, Mirror.LEFT_RIGHT);
-				case 7 ->
-						quad == 3 ? T_WAY.with(Rotation.CLOCKWISE_90) : T_WAY.with(Rotation.CLOCKWISE_90, Mirror.LEFT_RIGHT);
-				case 14 ->
-						quad == 1 ? T_WAY.with(Rotation.CLOCKWISE_180) : T_WAY.with(Rotation.CLOCKWISE_180, Mirror.LEFT_RIGHT);
-				case 11 ->
-						quad == 0 ? T_WAY.with(Rotation.COUNTERCLOCKWISE_90) : T_WAY.with(Rotation.COUNTERCLOCKWISE_90, Mirror.LEFT_RIGHT);
+			return switch (open) {
+				case 9, 5, 6, 10 -> SKIP;
+				case 13 -> QUAD.mirror(quad == 2, Mirror.LEFT_RIGHT);
+				case 7 -> QUAD.with(Rotation.CLOCKWISE_90).mirror(quad == 3, Mirror.LEFT_RIGHT);
+				case 14 -> QUAD.with(Rotation.CLOCKWISE_180).mirror(quad == 1, Mirror.LEFT_RIGHT);
+				case 11 -> QUAD.with(Rotation.COUNTERCLOCKWISE_90).mirror(quad == 0, Mirror.LEFT_RIGHT);
 				default -> MISSING;
 			};
-			return ans.room("quad/");
 		}
 		int open = getOpenings(cell);
 		var room = getRoomName(getRoomType(cell));
