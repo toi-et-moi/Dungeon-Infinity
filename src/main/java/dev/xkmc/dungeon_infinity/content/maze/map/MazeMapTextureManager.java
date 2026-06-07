@@ -2,6 +2,7 @@ package dev.xkmc.dungeon_infinity.content.maze.map;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import dev.xkmc.dungeon_infinity.content.maze.cap.MazeHistory;
+import dev.xkmc.dungeon_infinity.content.maze.cap.MazePos;
 import dev.xkmc.dungeon_infinity.content.maze.chunkgen.MazeDimHolder;
 import dev.xkmc.dungeon_infinity.init.DungeonInfinity;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -20,14 +21,14 @@ public class MazeMapTextureManager implements AutoCloseable {
 
 	private final Long2ObjectMap<MazeLevelMapSet> dims = new Long2ObjectOpenHashMap<>();
 
-	public MapTextureData getDetail(long seed, int x, int y, int z) {
+	public MapTextureData getDetail(long seed, MazePos pos) {
 		var dim = dims.computeIfAbsent(seed, MazeLevelMapSet::new);
-		return dim.getDetail(x, y, z);
+		return dim.getDetail(pos);
 	}
 
-	public FogTextureData getFog(long seed, int x, int y, int z) {
+	public FogTextureData getFog(long seed, MazePos pos) {
 		var dim = dims.computeIfAbsent(seed, MazeLevelMapSet::new);
-		return dim.getFog(x, y, z);
+		return dim.getFog(pos);
 	}
 
 	@Override
@@ -47,14 +48,12 @@ public class MazeMapTextureManager implements AutoCloseable {
 			this.dim = new MazeDimHolder(seed);
 		}
 
-		public MapTextureData getDetail(int x, int y, int z) {
-			var id = BlockPos.asLong(x, y, z);
-			return detail.computeIfAbsent(id, _ -> new MapTextureData(dim, new Vec3i(x, y, z)));
+		public MapTextureData getDetail(MazePos pos) {
+			return detail.computeIfAbsent(pos.key(), _ -> new MapTextureData(dim, pos));
 		}
 
-		public FogTextureData getFog(int x, int y, int z) {
-			var id = BlockPos.asLong(x, y, z);
-			return fog.computeIfAbsent(id, _ -> new FogTextureData(new Vec3i(x, y, z)));
+		public FogTextureData getFog(MazePos pos) {
+			return fog.computeIfAbsent(pos.key(), _ -> new FogTextureData(pos));
 		}
 
 		@Override
@@ -77,14 +76,14 @@ public class MazeMapTextureManager implements AutoCloseable {
 		public int w, h;
 		public int[][] data;
 
-		public MapTextureData(MazeDimHolder dim, Vec3i pos) {
+		public MapTextureData(MazeDimHolder dim, MazePos pos) {
 			this.dim = dim;
-			this.pos = pos;
+			this.pos = pos.toVec3i();
 			w = 25;
 			h = 25;
 			data = new int[128][128];
 			this.texture = new DynamicTexture(() -> "Maze Map " + pos, 128, 128, true);
-			this.id = DungeonInfinity.loc("maze_map/" + Long.toUnsignedString(new BlockPos(pos).asLong(), 16));
+			this.id = DungeonInfinity.loc("maze_map/" + Long.toUnsignedString(pos.key(), 16));
 			Minecraft.getInstance().getTextureManager().register(id, texture);
 			fill();
 		}
@@ -131,13 +130,13 @@ public class MazeMapTextureManager implements AutoCloseable {
 
 		private int revision = -1;
 
-		public FogTextureData(Vec3i pos) {
-			this.pos = pos;
+		public FogTextureData(MazePos pos) {
+			this.pos = pos.toVec3i();
 			w = 25;
 			h = 25;
 			data = new int[32][32];
 			this.texture = new DynamicTexture(() -> "Maze Fog " + pos, 32, 32, true);
-			this.id = DungeonInfinity.loc("maze_fog/" + Long.toUnsignedString(new BlockPos(pos).asLong(), 16));
+			this.id = DungeonInfinity.loc("maze_fog/" + Long.toUnsignedString(pos.key(), 16));
 			Minecraft.getInstance().getTextureManager().register(id, texture);
 		}
 

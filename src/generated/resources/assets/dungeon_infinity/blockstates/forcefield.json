@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "dungeon_infinity:block/forcefield",
+      "x": 90
+    },
+    "facing=east": {
+      "model": "dungeon_infinity:block/forcefield",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "dungeon_infinity:block/forcefield"
+    },
+    "facing=south": {
+      "model": "dungeon_infinity:block/forcefield",
+      "y": 180
+    },
+    "facing=up": {
+      "model": "dungeon_infinity:block/forcefield",
+      "x": 270
+    },
+    "facing=west": {
+      "model": "dungeon_infinity:block/forcefield",
+      "y": 270
+    }
+  }
+}

@@ -4,8 +4,6 @@ import dev.xkmc.l2core.capability.player.PlayerCapabilityTemplate;
 import dev.xkmc.l2serial.serialization.marker.SerialClass;
 import dev.xkmc.l2serial.serialization.marker.SerialField;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.minecraft.core.BlockPos;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.Map;
@@ -18,20 +16,13 @@ public class MazeHistory extends PlayerCapabilityTemplate<MazeHistory> {
 
 	@Override
 	public void tick(Player player) {
-		var pos = player.blockPosition();
-		int x = Math.floorDiv(pos.getX(), 16 * 25);
-		int z = Math.floorDiv(pos.getZ(), 16 * 25);
-		int y = Mth.clamp(pos.getY() / 16, 0, 15);
-		var key = BlockPos.asLong(x, y, z);
-		var ent = data.computeIfAbsent(key, k -> new Visit());
-		int px = pos.getX() - x * 16 * 25;
-		int pz = pos.getZ() - z * 16 * 25;
-		ent.visit(px / 16, pz / 16);
+		var pos = MazePos.map(player.blockPosition());
+		var ent = data.computeIfAbsent(pos.key(), k -> new Visit());
+		ent.visit(pos);
 	}
 
-	public Visit getOrCreate(int x, int y, int z) {
-		var key = BlockPos.asLong(x, y, z);
-		return data.computeIfAbsent(key, k -> new Visit());
+	public Visit getOrCreate(MazePos pos) {
+		return data.computeIfAbsent(pos.key(), k -> new Visit());
 	}
 
 	@SerialClass
@@ -44,7 +35,9 @@ public class MazeHistory extends PlayerCapabilityTemplate<MazeHistory> {
 		@SerialField
 		private final byte[] visitedGrid = new byte[MAX];
 		@SerialField
-		private int visited = 0, visible = 0;
+		private final byte[] defeatGrid = new byte[MAX];
+		@SerialField
+		private int visited = 0, visible = 0, defeat = 0;
 		@SerialField
 		private int revision = 0;
 
@@ -66,7 +59,9 @@ public class MazeHistory extends PlayerCapabilityTemplate<MazeHistory> {
 			return (visibleGrid[i] & j) != 0;
 		}
 
-		public void visit(int x, int z) {
+		public void visit(MazePos pos) {
+			int x = pos.px() >> 4;
+			int z = pos.pz() >> 4;
 			int index = x * R + z;
 			int i = index >> 3;
 			int j = 1 << (index & 7);
@@ -101,6 +96,26 @@ public class MazeHistory extends PlayerCapabilityTemplate<MazeHistory> {
 			visible++;
 		}
 
+		public void defeat(MazePos pos) {
+			int x = pos.px() >> 4;
+			int z = pos.pz() >> 4;
+			int index = x * R + z;
+			int i = index >> 3;
+			int j = 1 << (index & 7);
+			if ((defeatGrid[i] & j) != 0) return;
+			defeatGrid[i] |= j;
+			defeat++;
+			revision++;
+		}
+
+		public boolean isDefeated(MazePos pos) {
+			int x = pos.px() >> 4;
+			int z = pos.pz() >> 4;
+			int index = x * R + z;
+			int i = index >> 3;
+			int j = 1 << (index & 7);
+			return (defeatGrid[i] & j) != 0;
+		}
 	}
 
 }

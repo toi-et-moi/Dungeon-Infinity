@@ -270,4 +270,5 @@ public class MazeWallBlock {
 			pvd.itemModelOutput.accept(ctx.get(), ItemModelUtils.plainModel(TexturedModel.CUBE.createWithSuffix(ctx.get().getBlock(), "_inventory", pvd.modelOutput)));
 		}
 	}
+
 }
