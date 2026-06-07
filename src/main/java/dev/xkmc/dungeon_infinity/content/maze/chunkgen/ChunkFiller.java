@@ -1,7 +1,6 @@
 package dev.xkmc.dungeon_infinity.content.maze.chunkgen;
 
 import dev.xkmc.dungeon_infinity.init.DungeonInfinity;
-import dev.xkmc.dungeon_infinity.init.reg.DIItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
@@ -12,6 +11,7 @@ import net.minecraft.world.level.levelgen.RandomSupport;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 public class ChunkFiller {
@@ -52,19 +52,10 @@ public class ChunkFiller {
 				.setKnownShape(true).setIgnoreEntities(true)
 				.setRotation(ins.rot()).setMirror(ins.mir());
 
-		int x0 = 0, x1 = 15, z0 = 0, z1 = 15;
-		switch (ins.mir()) {
-			case LEFT_RIGHT -> z1 = -z1;
-			case FRONT_BACK -> x1 = -x1;
-		}
+		var dst = StructureTemplate.transform(new BlockPos(15, 0, 15), ins.mir(), ins.rot(), BlockPos.ZERO);
+		var src = StructureTemplate.transform(new BlockPos(ins.x0(), 0, ins.z0()), ins.mir(), ins.rot(), BlockPos.ZERO);
 
-		BlockPos offset = switch (ins.rot()) {
-			case COUNTERCLOCKWISE_90 -> new BlockPos(-Math.min(z0, z1), 0, Math.max(x0, x1));
-			case CLOCKWISE_90 -> new BlockPos(Math.max(z0, z1), 0, -Math.min(x0, x1));
-			case CLOCKWISE_180 -> new BlockPos(Math.max(x0, x1), 0, Math.max(z0, z1));
-			default -> new BlockPos(-Math.min(x0, x1), 0, -Math.min(z0, z1));
-		};
-		o = o.offset(offset);
+		o = o.offset(Math.max(0, -dst.getX()), 0, Math.max(0, -dst.getZ())).subtract(src);
 		template.placeInWorld(level, o, o, settings, random, 18);
 	}
 

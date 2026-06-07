@@ -8,11 +8,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 
+import java.util.Map;
+
 @SerialClass
 public class MazeHistory extends PlayerCapabilityTemplate<MazeHistory> {
 
 	@SerialField
-	public final Long2ObjectOpenHashMap<Visit> data = new Long2ObjectOpenHashMap<>();
+	public final Map<Long, Visit> data = new Long2ObjectOpenHashMap<>();
 
 	@Override
 	public void tick(Player player) {
