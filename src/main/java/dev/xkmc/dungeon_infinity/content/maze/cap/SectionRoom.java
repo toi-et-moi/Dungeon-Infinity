@@ -42,8 +42,8 @@ public class SectionRoom {
 			int rx = Math.floorDiv(pos.x(), 25);
 			int rz = Math.floorDiv(pos.z(), 25);
 			maze = dim.getRegion(rx, pos.y(), rz);
-			x = pos.x() - rx;
-			z = pos.z() - rz;
+			x = pos.x() - rx * 25;
+			z = pos.z() - rz * 25;
 		}
 	}
 

@@ -92,8 +92,6 @@ public class MobRoomTicker {
 	}
 
 	private void stop(MobRoomHolder ins) {
-		started = false;
-		ins.setWall(false);
 		if (isDefeated()) {
 			for (var e : players) {
 				var data = DIMeta.HISTORY.type().getOrCreate(e);
@@ -113,6 +111,8 @@ public class MobRoomTicker {
 		for (var e : mobs) {
 			e.discard();
 		}
+		started = false;
+		ins.setWall(false);
 		players.clear();
 		playerIds.clear();
 		mobs.clear();
