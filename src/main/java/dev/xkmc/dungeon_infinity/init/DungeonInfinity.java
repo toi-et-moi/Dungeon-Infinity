@@ -1,6 +1,7 @@
 package dev.xkmc.dungeon_infinity.init;
 
 import com.tterrag.registrate.providers.ProviderType;
+import dev.xkmc.dungeon_infinity.content.maze.cap.DefeatRoomPacket;
 import dev.xkmc.dungeon_infinity.init.data.DIConfig;
 import dev.xkmc.dungeon_infinity.init.data.DIConfigGen;
 import dev.xkmc.dungeon_infinity.init.data.DIDimensionGen;
@@ -11,6 +12,7 @@ import dev.xkmc.dungeon_infinity.init.reg.DIWorldGen;
 import dev.xkmc.l2core.init.reg.registrate.L2Registrate;
 import dev.xkmc.l2core.init.reg.simple.Reg;
 import dev.xkmc.l2core.serial.config.PacketHandlerWithConfig;
+import dev.xkmc.l2serial.network.PacketHandler;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
@@ -34,7 +36,8 @@ public class DungeonInfinity {
 	public static final L2Registrate REGISTRATE = new L2Registrate(MODID);
 
 	public static final PacketHandlerWithConfig HANDLER = new PacketHandlerWithConfig(
-			DungeonInfinity.MODID, 1
+			DungeonInfinity.MODID, 1,
+			e -> e.create(DefeatRoomPacket.class, PacketHandler.NetDir.PLAY_TO_CLIENT)
 	);
 
 	public DungeonInfinity(IEventBus bus) {

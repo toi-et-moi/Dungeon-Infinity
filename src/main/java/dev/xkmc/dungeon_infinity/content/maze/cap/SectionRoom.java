@@ -55,9 +55,9 @@ public class SectionRoom {
 	public boolean walled = false;
 
 	@SerialField
-	public @Nullable MobRoomData data = null;
+	public @Nullable MobRoomTicker data = null;
 
-	@Nullable MobRoomIns ins = null;
+	@Nullable MobRoomHolder ins = null;
 
 	public ServerLevel level() {
 		return sl;
@@ -71,15 +71,14 @@ public class SectionRoom {
 		return walled;
 	}
 
-	public MobRoomIns getOrCreateActiveMobRoomInstance() {
+	public MobRoomHolder getOrCreateActiveMobRoomInstance() {
 		if (ins != null) return ins;
 		var room = findRoom();
-		ins = new MobRoomIns(room);
+		ins = new MobRoomHolder(room);
 		return ins;
 	}
 
 	public void setWall(Direction dir, boolean gen) {
-		walled = gen;
 		var origin = pos.origin();
 		var src = origin.offset(dir.getStepX() > 0 ? 15 : 0, dir.getStepY() > 0 ? 15 : 0, dir.getStepZ() > 0 ? 15 : 0);
 		var dst = src.offset(dir.getStepX() == 0 ? 15 : 0, dir.getStepY() == 0 ? 15 : 0, dir.getStepZ() == 0 ? 15 : 0);
@@ -91,7 +90,7 @@ public class SectionRoom {
 				for (int z = src.getZ(); z <= dst.getZ(); z++) {
 					mpos.set(x, y, z);
 					var old = lc.getBlockState(mpos);
-					lc.setBlockState(mpos, old.isSolid() ? block : wall);
+					level().setBlockAndUpdate(mpos, old.isSolid() ? block : wall);
 				}
 			}
 		}
@@ -108,7 +107,7 @@ public class SectionRoom {
 			for (int ix = 0; ix < 3; ix++) {
 				for (int iz = 0; iz < 3; iz++) {
 					for (int iy = 0; iy < 2; iy++) {
-						ans[ix][iy][iz] = RoomDataHolder.get(sl, pos.offset(ix - cx, iy - layer, iz - cz));
+						ans[ix][iy][iz] = MazeRoomData.get(sl, pos.offset(ix - cx, iy - layer, iz - cz));
 					}
 				}
 			}
@@ -121,13 +120,13 @@ public class SectionRoom {
 			var ans = new SectionRoom[2][1][2];
 			for (int ix = 0; ix < 2; ix++) {
 				for (int iz = 0; iz < 2; iz++) {
-					ans[ix][0][iz] = RoomDataHolder.get(sl, pos.offset(ix - cx, 0, iz - cz));
+					ans[ix][0][iz] = MazeRoomData.get(sl, pos.offset(ix - cx, 0, iz - cz));
 
 				}
 			}
 			return ans;
 		}
-		if (CellInterpreter.getRoomType(cell) < CellInterpreter.ROOM)
+		if (CellInterpreter.isHallway(cell))
 			return new SectionRoom[0][0][0];
 		List<int[]> rel = RoomProcessorStrategy.findRooms(maze, x, z);
 		int x0 = 25, z0 = 25, x1 = 0, z1 = 0;
@@ -139,7 +138,7 @@ public class SectionRoom {
 		}
 		@Nullable SectionRoom[][][] ans = new SectionRoom[x1 - x0 + 1][1][z1 - z0 + 1];
 		for (var p : rel) {
-			ans[p[0] - x0][0][p[1] - z0] = RoomDataHolder.get(sl, pos.offset(p[0] - x, 0, p[1] - z));
+			ans[p[0] - x0][0][p[1] - z0] = MazeRoomData.get(sl, pos.offset(p[0] - x, 0, p[1] - z));
 		}
 		return ans;
 	}
@@ -149,12 +148,12 @@ public class SectionRoom {
 		if (visit.isDefeated(pos)) return;
 		if (CellInterpreter.isBossRoom(cell) ||
 				CellInterpreter.isQuadRoom(cell) ||
-				CellInterpreter.getRoomType(cell) >= CellInterpreter.ROOM) {
+				!CellInterpreter.isHallway(cell)) {
 			var origin = new Vec3(this.pos.origin());
 			var box = new AABB(origin.add(2, 2, 2), origin.add(14, 14, 14));
 			if (box.contains(sp.position().add(sp.getBbHeight() / 2))) {
 				var ins = getOrCreateActiveMobRoomInstance();
-				ins.tick(this, sp);
+				ins.tick(sp);
 			}
 		}
 	}

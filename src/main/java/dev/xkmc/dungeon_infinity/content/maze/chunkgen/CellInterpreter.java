@@ -49,7 +49,7 @@ public class CellInterpreter {
 		return (marker - 1) << 11;
 	}
 
-	public static int getRoomType(int cell) {
+	private static int getRoomType(int cell) {
 		return cell >> 11;
 	}
 
@@ -126,12 +126,12 @@ public class CellInterpreter {
 	private static final CellInstance CROSS_STAIRS = new CellInstance("cross_stairs");
 	private static final CellInstance QUAD = new CellInstance("quad", 32, 16, 0);
 
-	public static boolean isHallway(int room) {
-		return room == 1;
+	public static boolean isHallway(int cell) {
+		return getRoomType(cell) == 1;
 	}
 
-	public static String getRoomName(int room) {
-		return switch (room) {
+	public static String getRoomName(int cell) {
+		return switch (getRoomType(cell)) {
 			case 1 -> "path/";
 			case 2 -> "room/";
 			default -> "";
@@ -156,7 +156,7 @@ public class CellInterpreter {
 			};
 		}
 		int open = getOpenings(cell);
-		var room = getRoomName(getRoomType(cell));
+		var room = getRoomName(cell);
 		var ans = switch (open) {
 			case 1 -> END;
 			case 2 -> END.with(Rotation.CLOCKWISE_180);

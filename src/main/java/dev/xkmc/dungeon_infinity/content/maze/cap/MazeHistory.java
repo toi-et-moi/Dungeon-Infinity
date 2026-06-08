@@ -1,12 +1,15 @@
 package dev.xkmc.dungeon_infinity.content.maze.cap;
 
+import dev.xkmc.dungeon_infinity.init.data.DIDimensionGen;
 import dev.xkmc.l2core.capability.player.PlayerCapabilityTemplate;
 import dev.xkmc.l2serial.serialization.marker.SerialClass;
 import dev.xkmc.l2serial.serialization.marker.SerialField;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
 
@@ -16,15 +19,45 @@ public class MazeHistory extends PlayerCapabilityTemplate<MazeHistory> {
 	@SerialField
 	public final Map<Long, Visit> data = new Long2ObjectOpenHashMap<>();
 
+	@SerialField
+	public @Nullable BlockPos activeMobRoom = null;
+
+	public boolean inMazeDim(Player player) {
+		return player.level().dimension().identifier().equals(DIDimensionGen.LEVEL_MAZE.identifier());
+	}
+
+	public void snapToRoom(ServerPlayer sp, BlockPos fallback) {
+		if (activeMobRoom == null) activeMobRoom = fallback;
+		sp.snapTo(activeMobRoom.getBottomCenter());
+	}
+
 	@Override
 	public void tick(Player player) {
+		if (!inMazeDim(player)) {
+			activeMobRoom = null;
+			return;
+		}
+		if (player instanceof ServerPlayer sp && activeMobRoom != null) {
+			var sec = MazeRoomData.get(sp.level(), SectionPos.of(activeMobRoom));
+			if (sec != null && sec.isActive()) {
+				if (sec.getOrCreateActiveMobRoomInstance().contains(sp))
+					activeMobRoom = sp.blockPosition();
+				else if (!sp.isCreative())
+					sp.snapTo(activeMobRoom.getBottomCenter());
+				else activeMobRoom = null;
+			} else activeMobRoom = null;
+		}
 		var pos = MazePos.map(player.blockPosition());
 		var ent = data.computeIfAbsent(pos.key(), k -> new Visit());
 		ent.visit(pos);
 		if (player instanceof ServerPlayer sp) {
-			var sec = RoomDataHolder.get(sp.level(), SectionPos.of(sp.blockPosition()));
-			if (sec != null)
+			var sec = MazeRoomData.get(sp.level(), SectionPos.of(sp.blockPosition()));
+			if (sec != null) {
 				sec.tick(ent, pos, sp);
+				if (sec.isActive()) {
+					activeMobRoom = sp.blockPosition();
+				}
+			}
 		}
 	}
 
@@ -118,6 +151,13 @@ public class MazeHistory extends PlayerCapabilityTemplate<MazeHistory> {
 		public boolean isDefeated(MazePos pos) {
 			int x = pos.px() >> 4;
 			int z = pos.pz() >> 4;
+			int index = x * R + z;
+			int i = index >> 3;
+			int j = 1 << (index & 7);
+			return (defeatGrid[i] & j) != 0;
+		}
+
+		public boolean isDefeated(int x, int z) {
 			int index = x * R + z;
 			int i = index >> 3;
 			int j = 1 << (index & 7);

@@ -29,11 +29,12 @@ public class MazeMapPixelMapper {
 
 		if (CellInterpreter.isBossRoom(cell)) {
 			int boss = CellInterpreter.getBossRoom(cell);
+			int col = boss >= 9 ? g : r;
 			int c = boss % 9;
 			int x = c / 3;
 			int z = c % 3;
 			for (int i = 0; i < 5; i++)
-				Arrays.fill(ans[i], r);
+				Arrays.fill(ans[i], col);
 			if (x == 0 || x == 2) {
 				int k = x * 2;
 				if (z != 1) {
@@ -61,10 +62,9 @@ public class MazeMapPixelMapper {
 			if ((open & 4) == 0) for (int i = 0; i <= 4; i++) ans[i][0] = b;
 			if ((open & 8) == 0) for (int i = 0; i <= 4; i++) ans[i][4] = b;
 		} else {
-			int room = CellInterpreter.getRoomType(cell);
 			int open = CellInterpreter.getOpenings(cell);
 			int c = (open & 16) != 0 ? y : (open & 32) != 0 ? g : a;
-			if (CellInterpreter.isHallway(room)) {
+			if (CellInterpreter.isHallway(cell)) {
 				for (int i = 0; i < 5; i++)
 					Arrays.fill(ans[i], w);
 				if ((open & 1) != 0) for (int i = 0; i <= 2; i++) ans[i][2] = c;

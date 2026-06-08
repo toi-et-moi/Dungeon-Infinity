@@ -10,15 +10,15 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MobRoomIns {
+public class MobRoomHolder {
 
 	private final @Nullable SectionRoom[][][] rooms;
-	private final MobRoomData data;
 
+	final MobRoomTicker data;
 	final List<SectionRoom> list = new ArrayList<>();
 	final SectionRoom holder;
 
-	public MobRoomIns(@Nullable SectionRoom[][][] rooms) {
+	public MobRoomHolder(@Nullable SectionRoom[][][] rooms) {
 		this.rooms = rooms;
 		for (SectionRoom[][] ess : rooms) {
 			for (SectionRoom[] es : ess) {
@@ -31,7 +31,7 @@ public class MobRoomIns {
 		}
 		holder = list.getFirst();
 		if (holder.data == null)
-			holder.data = new MobRoomData();
+			holder.data = new MobRoomTicker();
 		data = holder.data;
 	}
 
@@ -44,15 +44,16 @@ public class MobRoomIns {
 				for (int z = 0; z < zn; z++) {
 					var room = rooms[x][y][z];
 					if (room == null) continue;
+					room.walled = gen;
 					int cell = room.getCell();
 					if ((cell & 1) != 0 && (x == 0 || rooms[x - 1][y][z] == null))
 						room.setWall(Direction.WEST, gen);
 					if ((cell & 2) != 0 && (x >= xn - 1 || rooms[x + 1][y][z] == null))
 						room.setWall(Direction.EAST, gen);
 					if ((cell & 4) != 0 && (z == 0 || rooms[x][y][z - 1] == null))
-						room.setWall(Direction.SOUTH, gen);
-					if ((cell & 8) != 0 && (z >= zn - 1 || rooms[x][y][z + 1] == null))
 						room.setWall(Direction.NORTH, gen);
+					if ((cell & 8) != 0 && (z >= zn - 1 || rooms[x][y][z + 1] == null))
+						room.setWall(Direction.SOUTH, gen);
 					if ((cell & 32) != 0)
 						room.setWall(Direction.DOWN, gen);
 				}
@@ -60,7 +61,7 @@ public class MobRoomIns {
 		}
 	}
 
-	public void tick(SectionRoom origin, ServerPlayer sp) {
+	public void tick(ServerPlayer sp) {
 		if (data.isDefeated()) return;
 		data.track(sp);
 		data.tick(this);

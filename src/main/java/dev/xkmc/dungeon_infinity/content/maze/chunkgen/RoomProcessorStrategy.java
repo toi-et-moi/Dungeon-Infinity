@@ -300,7 +300,7 @@ public class RoomProcessorStrategy {
 			if (marker[x][z] > 0) return;
 			marker[x][z] = 1;
 			int cell = maze[x][z];
-			if (CellInterpreter.getRoomType(cell) < CellInterpreter.ROOM) return;
+			if (CellInterpreter.isHallway(cell)) return;
 			queue.add(new int[]{x, z});
 		}
 

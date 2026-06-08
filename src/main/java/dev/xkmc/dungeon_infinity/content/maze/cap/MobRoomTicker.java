@@ -1,5 +1,6 @@
 package dev.xkmc.dungeon_infinity.content.maze.cap;
 
+import dev.xkmc.dungeon_infinity.init.DungeonInfinity;
 import dev.xkmc.dungeon_infinity.init.reg.DIMeta;
 import dev.xkmc.l2serial.serialization.marker.SerialClass;
 import dev.xkmc.l2serial.serialization.marker.SerialField;
@@ -12,7 +13,7 @@ import net.minecraft.world.entity.LivingEntity;
 import java.util.*;
 
 @SerialClass
-public class MobRoomData {
+public class MobRoomTicker {
 
 	private final Set<ServerPlayer> players = new LinkedHashSet<>();
 	private final List<LivingEntity> mobs = new LinkedList<>();
@@ -27,22 +28,27 @@ public class MobRoomData {
 	public long lastTick = -1;
 
 	public boolean isDefeated() {
-		return started && mobs.isEmpty();
+		return !players.isEmpty() && started && mobs.isEmpty();
 	}
 
 	public void track(ServerPlayer sp) {
+		if (sp.isSpectator()) return;
 		players.add(sp);
 		playerIds.add(sp.getUUID());
 	}
 
-	private void sanitize(ServerLevel level, MobRoomIns ins) {
+	private void sanitize(ServerLevel level, MobRoomHolder ins) {
 		players.clear();
 		for (var id : playerIds) {
 			var p = level.getPlayerByUUID(id);
 			if (!(p instanceof ServerPlayer sp)) continue;
 			if (p.isSpectator()) continue;
 			if (sp.level() != level || !sp.isAlive()) continue;
-			if (!ins.contains(sp)) continue;
+			if (!ins.contains(sp)) {
+				if (sp.isCreative())
+					continue;
+				DIMeta.HISTORY.type().getOrCreate(sp).snapToRoom(sp, ins.holder.getBlockPos().offset(8, 3, 8));
+			}
 			players.add(sp);
 		}
 		playerIds.clear();
@@ -55,7 +61,8 @@ public class MobRoomData {
 			var e = level.getEntity(id);
 			if (!(e instanceof LivingEntity le)) continue;
 			if (le.level() != level || !le.isAlive()) continue;
-			if (!ins.contains(le)) continue;
+			if (!ins.contains(le))
+				le.snapTo(ins.holder.getBlockPos().offset(8, 3, 8).getCenter());
 			mobs.add(le);
 		}
 		mobIds.clear();
@@ -71,7 +78,7 @@ public class MobRoomData {
 		return false;
 	}
 
-	private void spawn(ServerLevel level, MobRoomIns ins) {
+	private void spawn(ServerLevel level, MobRoomHolder ins) {
 		//TODO
 		for (var r : ins.list) {
 			var pos = r.getBlockPos().offset(8, 3, 8);
@@ -84,7 +91,35 @@ public class MobRoomData {
 		}
 	}
 
-	public void tick(MobRoomIns ins) {
+	private void stop(MobRoomHolder ins) {
+		started = false;
+		ins.setWall(false);
+		if (isDefeated()) {
+			for (var e : players) {
+				var data = DIMeta.HISTORY.type().getOrCreate(e);
+				ArrayList<MazePos> points = new ArrayList<>();
+				for (var r : ins.list) {
+					var mp = MazePos.map(r.getBlockPos());
+					data.getOrCreate(mp).defeat(mp);
+				}
+				data.activeMobRoom = null;
+				DungeonInfinity.HANDLER.toClientPlayer(new DefeatRoomPacket(points), e);
+			}
+			for (var r : ins.list) {
+				r.ins = null;
+				r.data = null;
+			}
+		}
+		for (var e : mobs) {
+			e.discard();
+		}
+		players.clear();
+		playerIds.clear();
+		mobs.clear();
+		mobIds.clear();
+	}
+
+	public void tick(MobRoomHolder ins) {
 		var level = ins.holder.level();
 		var time = level.getGameTime();
 		if (time <= lastTick) return;
@@ -94,20 +129,10 @@ public class MobRoomData {
 			started = true;
 			ins.setWall(true);
 			spawn(level, ins);
+			DIMeta.ACTIVE.type().getOrCreate(level).activeRooms.add(ins.holder.getBlockPos());
 		}
-		if (isDefeated()) {
-			ins.setWall(false);
-			for (var e : players) {
-				var data = DIMeta.HISTORY.type().getOrCreate(e);
-				for (var r : ins.list) {
-					var mp = MazePos.map(r.getBlockPos());
-					data.getOrCreate(mp).defeat(mp);
-				}
-			}
-			for (var r : ins.list) {
-				r.ins = null;
-				r.data = null;
-			}
+		if (started && (mobs.isEmpty() || players.isEmpty())) {
+			stop(ins);
 		}
 	}
 

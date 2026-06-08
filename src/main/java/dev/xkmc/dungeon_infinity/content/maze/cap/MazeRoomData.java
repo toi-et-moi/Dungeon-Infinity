@@ -11,7 +11,7 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 import org.jspecify.annotations.Nullable;
 
 @SerialClass
-public class RoomDataHolder extends GeneralCapabilityTemplate<LevelChunk, RoomDataHolder> {
+public class MazeRoomData extends GeneralCapabilityTemplate<LevelChunk, MazeRoomData> {
 
 	@Nullable
 	public static SectionRoom get(ServerLevel sl, SectionPos pos) {
