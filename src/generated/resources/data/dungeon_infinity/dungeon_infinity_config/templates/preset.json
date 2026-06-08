@@ -1,0 +1,69 @@
+{
+  "templates": {
+    "boss": {
+      "test:": {
+        "weight": 100
+      }
+    },
+    "cross_stairs": {
+      "test:": {
+        "weight": 100
+      }
+    },
+    "path/corner": {
+      "test:": {
+        "weight": 100
+      }
+    },
+    "path/cross": {
+      "test:": {
+        "weight": 100
+      }
+    },
+    "path/straight": {
+      "test:": {
+        "weight": 100
+      }
+    },
+    "path/t_way": {
+      "test:": {
+        "weight": 100
+      }
+    },
+    "quad": {
+      "test:": {
+        "weight": 100
+      }
+    },
+    "room/corner": {
+      "test:": {
+        "weight": 100
+      }
+    },
+    "room/cross": {
+      "test:": {
+        "weight": 100
+      }
+    },
+    "room/end": {
+      "test:": {
+        "weight": 100
+      }
+    },
+    "room/straight": {
+      "test:": {
+        "weight": 100
+      }
+    },
+    "room/t_way": {
+      "test:": {
+        "weight": 100
+      }
+    },
+    "stairs": {
+      "test:": {
+        "weight": 100
+      }
+    }
+  }
+}

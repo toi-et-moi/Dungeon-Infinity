@@ -26,9 +26,10 @@ public class MazeHistory extends PlayerCapabilityTemplate<MazeHistory> {
 		return player.level().dimension().identifier().equals(DIDimensionGen.LEVEL_MAZE.identifier());
 	}
 
-	public void snapToRoom(ServerPlayer sp, BlockPos fallback) {
+	public void teleportToRoom(ServerPlayer sp, BlockPos fallback) {
 		if (activeMobRoom == null) activeMobRoom = fallback;
-		sp.snapTo(activeMobRoom.getBottomCenter());
+		var vec = activeMobRoom.getBottomCenter();
+		sp.teleportTo(vec.x, vec.y, vec.z);
 	}
 
 	@Override
@@ -43,7 +44,7 @@ public class MazeHistory extends PlayerCapabilityTemplate<MazeHistory> {
 				if (sec.getOrCreateActiveMobRoomInstance().contains(sp))
 					activeMobRoom = sp.blockPosition();
 				else if (!sp.isCreative())
-					sp.snapTo(activeMobRoom.getBottomCenter());
+					teleportToRoom(sp, activeMobRoom);
 				else activeMobRoom = null;
 			} else activeMobRoom = null;
 		}

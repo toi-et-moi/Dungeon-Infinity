@@ -6,6 +6,7 @@ import dev.xkmc.dungeon_infinity.content.block.ForceFieldBlock;
 import dev.xkmc.dungeon_infinity.content.block.MazeWallBlock;
 import dev.xkmc.dungeon_infinity.content.map.MazeMapItem;
 import dev.xkmc.dungeon_infinity.init.DungeonInfinity;
+import dev.xkmc.dungeon_infinity.init.data.DITagGen;
 import dev.xkmc.l2core.init.reg.registrate.SimpleEntry;
 import dev.xkmc.l2core.init.reg.simple.DCReg;
 import dev.xkmc.l2core.init.reg.simple.DCVal;
@@ -40,7 +41,7 @@ public class DIItems {
 						.strength(-1.0F, 3600000))
 				.blockstate(() -> MazeWallBlock.Model::buildModel)
 				.item().model(() -> MazeWallBlock.Model::buildItem).build()
-				.tag(BlockTags.DRAGON_IMMUNE, BlockTags.WITHER_IMMUNE)
+				.tag(BlockTags.DRAGON_IMMUNE, BlockTags.WITHER_IMMUNE, DITagGen.MAZE_STONE_AFFINITIVE, DITagGen.FORCEFIELD_CANNOT_REPLACE)
 				.register();
 
 		FORCEFIELD = DungeonInfinity.REGISTRATE.block("forcefield", ForceFieldBlock::new)

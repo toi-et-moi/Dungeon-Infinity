@@ -4,6 +4,7 @@ import dev.xkmc.dungeon_infinity.content.chunkgen.CellInterpreter;
 import dev.xkmc.dungeon_infinity.content.chunkgen.MazeChunkGenerator;
 import dev.xkmc.dungeon_infinity.content.chunkgen.MazeDimHolder;
 import dev.xkmc.dungeon_infinity.content.chunkgen.RoomProcessorStrategy;
+import dev.xkmc.dungeon_infinity.init.data.DITagGen;
 import dev.xkmc.dungeon_infinity.init.reg.DIItems;
 import dev.xkmc.l2serial.serialization.marker.SerialClass;
 import dev.xkmc.l2serial.serialization.marker.SerialField;
@@ -90,6 +91,7 @@ public class SectionRoom {
 				for (int z = src.getZ(); z <= dst.getZ(); z++) {
 					mpos.set(x, y, z);
 					var old = lc.getBlockState(mpos);
+					if (old.is(DITagGen.FORCEFIELD_CANNOT_REPLACE)) continue;
 					level().setBlockAndUpdate(mpos, old.isSolid() ? block : wall);
 				}
 			}
@@ -101,8 +103,8 @@ public class SectionRoom {
 		if (CellInterpreter.isBossRoom(cell)) {
 			int data = CellInterpreter.getBossRoom(cell);
 			int layer = data / 9;
-			int cx = layer % 9 / 3;
-			int cz = layer % 3;
+			int cx = data % 9 / 3;
+			int cz = data % 3;
 			var ans = new SectionRoom[3][2][3];
 			for (int ix = 0; ix < 3; ix++) {
 				for (int iz = 0; iz < 3; iz++) {

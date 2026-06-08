@@ -3,6 +3,7 @@ package dev.xkmc.dungeon_infinity.content.block;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.generators.RegistrateBlockModelGenerator;
 import com.tterrag.registrate.providers.generators.RegistrateItemModelGenerator;
+import dev.xkmc.dungeon_infinity.init.data.DITagGen;
 import dev.xkmc.l2modularblock.core.DelegateBlock;
 import dev.xkmc.l2modularblock.mult.*;
 import dev.xkmc.l2modularblock.one.MirrorRotateBlockMethod;
@@ -183,11 +184,11 @@ public class MazeWallBlock {
 					continue;
 				BlockState nei = level.getBlockState(next);
 				if (self.getValue(MAP.get(dire))) {
-					if (!isAffinitive(self, nei)) {
+					if (!isAffinitive(nei)) {
 						nei = getStateForPlacement(rep, level, next);
 						level.setBlock(next, nei, 18);
 					}
-				} else if (isAffinitive(self, nei)) {
+				} else if (isAffinitive(nei)) {
 					self = self.setValue(MAP.get(dire), true);
 				}
 			}
@@ -196,11 +197,8 @@ public class MazeWallBlock {
 			}
 		}
 
-		private boolean isAffinitive(BlockState self, BlockState neighbor) {
-			return self.getBlock() == neighbor.getBlock()
-					|| neighbor.getBlock() == Blocks.BEDROCK
-					|| neighbor.getBlock() == Blocks.BARRIER
-					|| neighbor.getBlock() == Blocks.STRUCTURE_VOID;
+		private boolean isAffinitive(BlockState neighbor) {
+			return neighbor.is(DITagGen.MAZE_STONE_AFFINITIVE);
 		}
 
 		@Override

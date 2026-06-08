@@ -120,11 +120,11 @@ public class RoomProcessorStrategy {
 	public class Scanner {
 
 		private final int[][] maze;
-		private final int[][] roomType;
+		private final int[][] roomMarker;
 
-		public Scanner(int[][] maze, int[][] roomType) {
+		public Scanner(int[][] maze, int[][] roomMarker) {
 			this.maze = maze;
-			this.roomType = roomType;
+			this.roomMarker = roomMarker;
 		}
 
 		public void scan(Random rand) {
@@ -163,7 +163,7 @@ public class RoomProcessorStrategy {
 				for (int ddx = 0; ddx <= 1; ddx++) {
 					for (int ddz = 0; ddz <= 1; ddz++) {
 						int cell = maze[dx + ddx][dz + ddz];
-						roomType[dx + ddx][dz + ddz] = CellInterpreter.getTemplateType(cell) == 1 ?
+						roomMarker[dx + ddx][dz + ddz] = CellInterpreter.getTemplateType(cell) == 1 ?
 								CellInterpreter.ROOM : CellInterpreter.HALLWAY;
 					}
 				}
@@ -176,49 +176,49 @@ public class RoomProcessorStrategy {
 	public class Marker {
 
 		private final Random rand;
-		private final int[][] roomType;
+		private final int[][] roomMarker;
 		private final int[][] maze;
 		Queue<int[]> rooms = new ArrayDeque<>();
 		Queue<int[]> largeRooms = new ArrayDeque<>();
 		Queue<int[]> hallways = new ArrayDeque<>();
 
-		public Marker(Random rand, int[][] roomType, int[][] maze) {
+		public Marker(Random rand, int[][] roomMarker, int[][] maze) {
 			this.rand = rand;
-			this.roomType = roomType;
+			this.roomMarker = roomMarker;
 			this.maze = maze;
 		}
 
 		private void prefill(int x, int z) {
 			if (x < 0 || z < 0 || x >= r1 || z >= r1) return;
-			if (roomType[x][z] != 0) return;
-			roomType[x][z] = CellInterpreter.HALLWAY;
+			if (roomMarker[x][z] != 0) return;
+			roomMarker[x][z] = CellInterpreter.HALLWAY;
 		}
 
 		public void mark() {
 			for (int x = 0; x < r1; x++) {
 				for (int z = 0; z < r1; z++) {
 					if (maze[x][z] >= 64)
-						roomType[x][z] = CellInterpreter.SPECIAL;
-					if (roomType[x][z] != 0) continue;
+						roomMarker[x][z] = CellInterpreter.SPECIAL;
+					if (roomMarker[x][z] != 0) continue;
 					int cell = maze[x][z];
 					if (CellInterpreter.getTemplateType(cell) == 1) {
-						roomType[x][z] = CellInterpreter.ROOM + 1;
+						roomMarker[x][z] = CellInterpreter.ROOM + 1;
 						continue;
 					}
 					if ((cell & 1) != 0 && x == 0 || (cell & 2) != 0 && x == r1 - 1 ||
 							(cell & 4) != 0 && z == 0 || (cell & 8) != 0 && z == r1 - 1
 					) {
-						roomType[x][z] = CellInterpreter.HALLWAY;
+						roomMarker[x][z] = CellInterpreter.HALLWAY;
 					}
 					int flag = CellInterpreter.getCellFlags(cell);
 					if (flag != 3) {
-						roomType[x][z] = CellInterpreter.getRoomMarker(cell, flag);
+						roomMarker[x][z] = CellInterpreter.getRoomMarker(cell, flag);
 					}
 				}
 			}
 			for (int x = 0; x < r1; x++) {
 				for (int z = 0; z < r1; z++) {
-					if (roomType[x][z] == CellInterpreter.SPECIAL) {
+					if (roomMarker[x][z] == CellInterpreter.SPECIAL) {
 						int cell = maze[x][z];
 						if ((cell & 1) != 0) prefill(x - 1, z);
 						if ((cell & 2) != 0) prefill(x + 1, z);
@@ -229,7 +229,7 @@ public class RoomProcessorStrategy {
 			}
 			for (int x = 0; x < r1; x++) {
 				for (int z = 0; z < r1; z++) {
-					int ans = roomType[x][z];
+					int ans = roomMarker[x][z];
 					if (ans >= CellInterpreter.HALLWAY) {
 						if (ans > CellInterpreter.ROOM) largeRooms.add(new int[]{x, z});
 						if (ans == CellInterpreter.ROOM) rooms.add(new int[]{x, z});
@@ -253,7 +253,7 @@ public class RoomProcessorStrategy {
 			int x = r[0];
 			int z = r[1];
 			int cell = maze[x][z];
-			int room = roomType[x][z];
+			int room = roomMarker[x][z];
 			if ((cell & 1) != 0) fromRoom(x - 1, z, room);
 			if ((cell & 2) != 0) fromRoom(x + 1, z, room);
 			if ((cell & 4) != 0) fromRoom(x, z - 1, room);
@@ -262,23 +262,23 @@ public class RoomProcessorStrategy {
 
 		private void fromRoom(int x, int z, int src) {
 			if (x < 0 || x >= r1 || z < 0 || z >= r1) return;
-			if (roomType[x][z] != 0) return;
+			if (roomMarker[x][z] != 0) return;
 			if (src > CellInterpreter.ROOM && rand.nextFloat() < getEndLargeRoomChance()) {
-				roomType[x][z] = src - 1;
+				roomMarker[x][z] = src - 1;
 				rooms.add(new int[]{x, z});
 			} else if (src >= CellInterpreter.ROOM) {
-				roomType[x][z] = CellInterpreter.HALLWAY;
+				roomMarker[x][z] = CellInterpreter.HALLWAY;
 				hallways.add(new int[]{x, z});
 			} else if (rand.nextFloat() < getRoomChance(maze[x][z])) {
 				if (rand.nextFloat() < getHallLargeRoomChance()) {
-					roomType[x][z] = CellInterpreter.ROOM + 1;
+					roomMarker[x][z] = CellInterpreter.ROOM + 1;
 					largeRooms.add(new int[]{x, z});
 				} else {
-					roomType[x][z] = CellInterpreter.ROOM;
+					roomMarker[x][z] = CellInterpreter.ROOM;
 					rooms.add(new int[]{x, z});
 				}
 			} else {
-				roomType[x][z] = CellInterpreter.HALLWAY;
+				roomMarker[x][z] = CellInterpreter.HALLWAY;
 				hallways.add(new int[]{x, z});
 			}
 		}
@@ -327,7 +327,6 @@ public class RoomProcessorStrategy {
 	public static List<int[]> findRooms(int[][] maze, int x, int z) {
 		return new Itr(maze).findRooms(x, z);
 	}
-
 
 }
 

@@ -196,12 +196,12 @@ public class MazeDimHolder {
 					checked = true;
 					col.check();
 					var rand = new Random(roomSeed);
-					int[][] roomType = new int[r2][r2];
-					strategy.new Scanner(maze, roomType).scan(rand);
-					strategy.new Marker(rand, roomType, maze).mark();
+					int[][] roomMarker = new int[r2][r2];
+					strategy.new Scanner(maze, roomMarker).scan(rand);
+					strategy.new Marker(rand, roomMarker, maze).mark();
 					for (int x = 0; x < r1; x++) {
 						for (int z = 0; z < r1; z++) {
-							maze[x][z] |= CellInterpreter.getRoomTypeMask(maze[x][z], roomType[x][z]);
+							maze[x][z] |= CellInterpreter.setRoomTypeMask(maze[x][z], roomMarker[x][z]);
 						}
 					}
 				}
@@ -225,6 +225,7 @@ public class MazeDimHolder {
 
 			private final int cx, cz;
 			private final int[] bossRoom = new int[y1];
+			private final int[] styles = new int[y1];
 			private final long stairSeed;
 
 			private boolean checked = false;

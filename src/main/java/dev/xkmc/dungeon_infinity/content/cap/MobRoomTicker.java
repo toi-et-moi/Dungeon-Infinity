@@ -47,7 +47,7 @@ public class MobRoomTicker {
 			if (!ins.contains(sp)) {
 				if (sp.isCreative())
 					continue;
-				DIMeta.HISTORY.type().getOrCreate(sp).snapToRoom(sp, ins.holder.getBlockPos().offset(8, 3, 8));
+				DIMeta.HISTORY.type().getOrCreate(sp).teleportToRoom(sp, ins.holder.getBlockPos().offset(8, 3, 8));
 			}
 			players.add(sp);
 		}

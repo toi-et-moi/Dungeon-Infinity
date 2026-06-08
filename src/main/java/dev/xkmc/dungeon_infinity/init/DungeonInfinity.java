@@ -2,15 +2,14 @@ package dev.xkmc.dungeon_infinity.init;
 
 import com.tterrag.registrate.providers.ProviderType;
 import dev.xkmc.dungeon_infinity.content.cap.DefeatRoomPacket;
-import dev.xkmc.dungeon_infinity.init.data.DIConfig;
-import dev.xkmc.dungeon_infinity.init.data.DIConfigGen;
-import dev.xkmc.dungeon_infinity.init.data.DIDimensionGen;
-import dev.xkmc.dungeon_infinity.init.data.DILang;
+import dev.xkmc.dungeon_infinity.content.config.TemplateConfig;
+import dev.xkmc.dungeon_infinity.init.data.*;
 import dev.xkmc.dungeon_infinity.init.reg.DIItems;
 import dev.xkmc.dungeon_infinity.init.reg.DIMeta;
 import dev.xkmc.dungeon_infinity.init.reg.DIWorldGen;
 import dev.xkmc.l2core.init.reg.registrate.L2Registrate;
 import dev.xkmc.l2core.init.reg.simple.Reg;
+import dev.xkmc.l2core.serial.config.ConfigTypeEntry;
 import dev.xkmc.l2core.serial.config.PacketHandlerWithConfig;
 import dev.xkmc.l2serial.network.PacketHandler;
 import net.minecraft.resources.Identifier;
@@ -40,6 +39,8 @@ public class DungeonInfinity {
 			e -> e.create(DefeatRoomPacket.class, PacketHandler.NetDir.PLAY_TO_CLIENT)
 	);
 
+	public static final ConfigTypeEntry<TemplateConfig> TEMPLATES = new ConfigTypeEntry<>(HANDLER, "templates", TemplateConfig.class);
+
 	public DungeonInfinity(IEventBus bus) {
 		DIItems.register();
 		DIMeta.register();
@@ -62,6 +63,7 @@ public class DungeonInfinity {
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public static void gatherData(GatherDataEvent.Client event) {
 		REGISTRATE.addDataGenerator(ProviderType.LANG, DILang::genLang);
+		REGISTRATE.addDataGenerator(ProviderType.BLOCK_TAGS, DITagGen::genBlockTags);
 		var init = REGISTRATE.getDataGenInitializer();
 		DIDimensionGen.init(init);
 		var gen = event.getGenerator();
