@@ -1,6 +1,6 @@
 package dev.xkmc.dungeon_infinity.init.reg;
 
-import dev.xkmc.dungeon_infinity.content.maze.chunkgen.MazeChunkGenerator;
+import dev.xkmc.dungeon_infinity.content.chunkgen.MazeChunkGenerator;
 import dev.xkmc.dungeon_infinity.init.DungeonInfinity;
 import dev.xkmc.l2core.init.reg.simple.CdcReg;
 import dev.xkmc.l2core.init.reg.simple.CdcVal;

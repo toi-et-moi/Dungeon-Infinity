@@ -1,7 +1,7 @@
 package dev.xkmc.dungeon_infinity.init.data;
 
 import com.tterrag.registrate.providers.DataProviderInitializer;
-import dev.xkmc.dungeon_infinity.content.maze.chunkgen.MazeChunkGenerator;
+import dev.xkmc.dungeon_infinity.content.chunkgen.MazeChunkGenerator;
 import dev.xkmc.dungeon_infinity.init.DungeonInfinity;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;

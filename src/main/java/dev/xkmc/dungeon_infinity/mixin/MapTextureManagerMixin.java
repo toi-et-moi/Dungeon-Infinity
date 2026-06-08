@@ -1,7 +1,7 @@
 package dev.xkmc.dungeon_infinity.mixin;
 
-import dev.xkmc.dungeon_infinity.content.maze.map.MapTextureManagerProvider;
-import dev.xkmc.dungeon_infinity.content.maze.map.MazeMapTextureManager;
+import dev.xkmc.dungeon_infinity.content.map.MapTextureManagerProvider;
+import dev.xkmc.dungeon_infinity.content.map.MazeMapTextureManager;
 import net.minecraft.client.resources.MapTextureManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;

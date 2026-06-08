@@ -2,9 +2,9 @@ package dev.xkmc.dungeon_infinity.init.reg;
 
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.entry.ItemEntry;
-import dev.xkmc.dungeon_infinity.content.maze.block.ForceFieldBlock;
-import dev.xkmc.dungeon_infinity.content.maze.block.MazeWallBlock;
-import dev.xkmc.dungeon_infinity.content.maze.map.MazeMapItem;
+import dev.xkmc.dungeon_infinity.content.block.ForceFieldBlock;
+import dev.xkmc.dungeon_infinity.content.block.MazeWallBlock;
+import dev.xkmc.dungeon_infinity.content.map.MazeMapItem;
 import dev.xkmc.dungeon_infinity.init.DungeonInfinity;
 import dev.xkmc.l2core.init.reg.registrate.SimpleEntry;
 import dev.xkmc.l2core.init.reg.simple.DCReg;

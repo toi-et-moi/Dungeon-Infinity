@@ -1,8 +1,8 @@
 package dev.xkmc.dungeon_infinity.init.reg;
 
-import dev.xkmc.dungeon_infinity.content.maze.cap.MazeHistory;
-import dev.xkmc.dungeon_infinity.content.maze.cap.MazeLevelData;
-import dev.xkmc.dungeon_infinity.content.maze.cap.MazeRoomData;
+import dev.xkmc.dungeon_infinity.content.cap.MazeHistory;
+import dev.xkmc.dungeon_infinity.content.cap.MazeLevelData;
+import dev.xkmc.dungeon_infinity.content.cap.MazeRoomData;
 import dev.xkmc.dungeon_infinity.init.DungeonInfinity;
 import dev.xkmc.dungeon_infinity.init.data.DIDimensionGen;
 import dev.xkmc.l2core.capability.player.PlayerCapabilityNetworkHandler;

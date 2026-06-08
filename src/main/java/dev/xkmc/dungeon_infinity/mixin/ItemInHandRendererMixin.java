@@ -2,8 +2,8 @@ package dev.xkmc.dungeon_infinity.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import dev.xkmc.dungeon_infinity.content.maze.map.MazeMapItem;
-import dev.xkmc.dungeon_infinity.content.maze.map.MazeMapRenderer;
+import dev.xkmc.dungeon_infinity.content.map.MazeMapItem;
+import dev.xkmc.dungeon_infinity.content.map.MazeMapRenderer;
 import dev.xkmc.dungeon_infinity.init.data.DIDimensionGen;
 import dev.xkmc.dungeon_infinity.init.reg.DIItems;
 import net.minecraft.client.Minecraft;

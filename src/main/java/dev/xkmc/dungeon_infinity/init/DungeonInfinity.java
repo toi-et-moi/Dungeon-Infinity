@@ -1,7 +1,7 @@
 package dev.xkmc.dungeon_infinity.init;
 
 import com.tterrag.registrate.providers.ProviderType;
-import dev.xkmc.dungeon_infinity.content.maze.cap.DefeatRoomPacket;
+import dev.xkmc.dungeon_infinity.content.cap.DefeatRoomPacket;
 import dev.xkmc.dungeon_infinity.init.data.DIConfig;
 import dev.xkmc.dungeon_infinity.init.data.DIConfigGen;
 import dev.xkmc.dungeon_infinity.init.data.DIDimensionGen;
