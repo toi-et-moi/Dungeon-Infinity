@@ -15,6 +15,7 @@ public class MazeMapPixelMapper {
 	}
 
 	public static int[][] getPixels(int cell) {
+		cell &= 0x1FFF;
 		if (CACHE.containsKey(cell))
 			return CACHE.get(cell);
 
