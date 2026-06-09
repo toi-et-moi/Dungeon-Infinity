@@ -1,8 +1,10 @@
 package dev.xkmc.dungeon_infinity.content.chunkgen;
 
+import dev.xkmc.dungeon_infinity.content.config.TemplateConfig;
 import dev.xkmc.dungeon_infinity.content.maze.generator.IRandom;
 import dev.xkmc.dungeon_infinity.content.maze.generator.MazeConfig;
 import dev.xkmc.dungeon_infinity.content.maze.generator.MazeGen;
+import net.minecraft.util.RandomSource;
 
 import java.util.*;
 
@@ -117,17 +119,48 @@ public class RoomProcessorStrategy {
 
 	}
 
+	public class Grid {
+
+		private final RandomSource rand;
+		private final int style;
+		private final int[][] maze;
+		private final int[][] marker;
+		private final int[][] variants;
+
+		public Grid(RandomSource rand, int style, int[][] maze) {
+			this.rand = rand;
+			this.style = style;
+			this.maze = maze;
+			this.marker = new int[r1][r1];
+			this.variants = new int[r1][r1];
+		}
+
+		public void set(int x, int z, int mark) {
+			marker[x][z] = mark;
+			maze[x][z] |= CellInterpreter.setRoomTypeMask(maze[x][z], mark);
+			variants[x][z] = TemplateConfig.of(maze[x][z]).getRandom(style, rand);
+			maze[x][z] |= CellInterpreter.setStyleAndVariant(style, variants[x][z]);
+		}
+
+		public void set(int x, int z, int mark, int variant) {
+			marker[x][z] = mark;
+			variants[x][z] = variant;
+			maze[x][z] |= CellInterpreter.setRoomTypeMask(maze[x][z], mark);
+			maze[x][z] |= CellInterpreter.setStyleAndVariant(style, variant);
+		}
+	}
+
 	public class Scanner {
 
 		private final int[][] maze;
-		private final int[][] roomMarker;
+		private final Grid marker;
 
-		public Scanner(int[][] maze, int[][] roomMarker) {
+		public Scanner(int[][] maze, Grid marker) {
 			this.maze = maze;
-			this.roomMarker = roomMarker;
+			this.marker = marker;
 		}
 
-		public void scan(Random rand) {
+		public void scan(RandomSource rand) {
 			List<int[]> candidates = new ArrayList<>();
 			for (int dx = 0; dx < r1 - 1; dx++) {
 				for (int dz = 0; dz < r1 - 1; dz++) {
@@ -163,8 +196,8 @@ public class RoomProcessorStrategy {
 				for (int ddx = 0; ddx <= 1; ddx++) {
 					for (int ddz = 0; ddz <= 1; ddz++) {
 						int cell = maze[dx + ddx][dz + ddz];
-						roomMarker[dx + ddx][dz + ddz] = CellInterpreter.getTemplateType(cell) == 1 ?
-								CellInterpreter.ROOM : CellInterpreter.HALLWAY;
+						marker.set(dx + ddx, dz + ddz, CellInterpreter.getTemplateType(cell) == 1 ?
+								CellInterpreter.ROOM : CellInterpreter.HALLWAY);
 					}
 				}
 
@@ -175,50 +208,44 @@ public class RoomProcessorStrategy {
 
 	public class Marker {
 
-		private final Random rand;
-		private final int[][] roomMarker;
+		private final RandomSource rand;
+		private final Grid grid;
 		private final int[][] maze;
 		Queue<int[]> rooms = new ArrayDeque<>();
 		Queue<int[]> largeRooms = new ArrayDeque<>();
 		Queue<int[]> hallways = new ArrayDeque<>();
 
-		public Marker(Random rand, int[][] roomMarker, int[][] maze) {
+		public Marker(RandomSource rand, Grid grid, int[][] maze) {
 			this.rand = rand;
-			this.roomMarker = roomMarker;
+			this.grid = grid;
 			this.maze = maze;
 		}
 
 		private void prefill(int x, int z) {
 			if (x < 0 || z < 0 || x >= r1 || z >= r1) return;
-			if (roomMarker[x][z] != 0) return;
-			roomMarker[x][z] = CellInterpreter.HALLWAY;
+			if (grid.marker[x][z] != 0) return;
+			grid.set(x, z, CellInterpreter.HALLWAY);
 		}
 
 		public void mark() {
 			for (int x = 0; x < r1; x++) {
 				for (int z = 0; z < r1; z++) {
-					if (maze[x][z] >= 64)
-						roomMarker[x][z] = CellInterpreter.SPECIAL;
-					if (roomMarker[x][z] != 0) continue;
+					if (grid.marker[x][z] != 0) continue;
 					int cell = maze[x][z];
-					if (CellInterpreter.getTemplateType(cell) == 1) {
-						roomMarker[x][z] = CellInterpreter.ROOM + 1;
-						continue;
-					}
-					if ((cell & 1) != 0 && x == 0 || (cell & 2) != 0 && x == r1 - 1 ||
-							(cell & 4) != 0 && z == 0 || (cell & 8) != 0 && z == r1 - 1
-					) {
-						roomMarker[x][z] = CellInterpreter.HALLWAY;
-					}
+					if (cell >= 64)
+						grid.set(x, z, CellInterpreter.SPECIAL);
 					int flag = CellInterpreter.getCellFlags(cell);
-					if (flag != 3) {
-						roomMarker[x][z] = CellInterpreter.getRoomMarker(cell, flag);
-					}
+					if (flag != 3)
+						grid.set(x, z, CellInterpreter.getRoomMarker(cell, flag));
+					else if ((cell & 1) != 0 && x == 0 || (cell & 2) != 0 && x == r1 - 1 ||
+							(cell & 4) != 0 && z == 0 || (cell & 8) != 0 && z == r1 - 1)
+						grid.set(x, z, CellInterpreter.HALLWAY);
+
 				}
 			}
 			for (int x = 0; x < r1; x++) {
 				for (int z = 0; z < r1; z++) {
-					if (roomMarker[x][z] == CellInterpreter.SPECIAL) {
+					if (grid.marker[x][z] == CellInterpreter.SPECIAL) {
 						int cell = maze[x][z];
 						if ((cell & 1) != 0) prefill(x - 1, z);
 						if ((cell & 2) != 0) prefill(x + 1, z);
@@ -229,7 +256,7 @@ public class RoomProcessorStrategy {
 			}
 			for (int x = 0; x < r1; x++) {
 				for (int z = 0; z < r1; z++) {
-					int ans = roomMarker[x][z];
+					int ans = grid.marker[x][z];
 					if (ans >= CellInterpreter.HALLWAY) {
 						if (ans > CellInterpreter.ROOM) largeRooms.add(new int[]{x, z});
 						if (ans == CellInterpreter.ROOM) rooms.add(new int[]{x, z});
@@ -253,32 +280,33 @@ public class RoomProcessorStrategy {
 			int x = r[0];
 			int z = r[1];
 			int cell = maze[x][z];
-			int room = roomMarker[x][z];
-			if ((cell & 1) != 0) fromRoom(x - 1, z, room);
-			if ((cell & 2) != 0) fromRoom(x + 1, z, room);
-			if ((cell & 4) != 0) fromRoom(x, z - 1, room);
-			if ((cell & 8) != 0) fromRoom(x, z + 1, room);
+			int room = grid.marker[x][z];
+			int variant = grid.variants[x][z];
+			if ((cell & 1) != 0) fromRoom(x - 1, z, room, variant);
+			if ((cell & 2) != 0) fromRoom(x + 1, z, room, variant);
+			if ((cell & 4) != 0) fromRoom(x, z - 1, room, variant);
+			if ((cell & 8) != 0) fromRoom(x, z + 1, room, variant);
 		}
 
-		private void fromRoom(int x, int z, int src) {
+		private void fromRoom(int x, int z, int src, int variant) {
 			if (x < 0 || x >= r1 || z < 0 || z >= r1) return;
-			if (roomMarker[x][z] != 0) return;
+			if (grid.marker[x][z] != 0) return;
 			if (src > CellInterpreter.ROOM && rand.nextFloat() < getEndLargeRoomChance()) {
-				roomMarker[x][z] = src - 1;
+				grid.set(x, z, src - 1, variant);
 				rooms.add(new int[]{x, z});
 			} else if (src >= CellInterpreter.ROOM) {
-				roomMarker[x][z] = CellInterpreter.HALLWAY;
+				grid.set(x, z, CellInterpreter.HALLWAY);
 				hallways.add(new int[]{x, z});
 			} else if (rand.nextFloat() < getRoomChance(maze[x][z])) {
 				if (rand.nextFloat() < getHallLargeRoomChance()) {
-					roomMarker[x][z] = CellInterpreter.ROOM + 1;
+					grid.set(x, z, CellInterpreter.ROOM + 1);
 					largeRooms.add(new int[]{x, z});
 				} else {
-					roomMarker[x][z] = CellInterpreter.ROOM;
+					grid.set(x, z, CellInterpreter.ROOM);
 					rooms.add(new int[]{x, z});
 				}
 			} else {
-				roomMarker[x][z] = CellInterpreter.HALLWAY;
+				grid.set(x, z, CellInterpreter.HALLWAY);
 				hallways.add(new int[]{x, z});
 			}
 		}

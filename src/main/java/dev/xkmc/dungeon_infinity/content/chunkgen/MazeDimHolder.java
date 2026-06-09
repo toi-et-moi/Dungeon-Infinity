@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import org.jspecify.annotations.Nullable;
 
@@ -195,15 +196,10 @@ public class MazeDimHolder {
 					if (checked) return;
 					checked = true;
 					col.check();
-					var rand = new Random(roomSeed);
-					int[][] roomMarker = new int[r2][r2];
-					strategy.new Scanner(maze, roomMarker).scan(rand);
-					strategy.new Marker(rand, roomMarker, maze).mark();
-					for (int x = 0; x < r1; x++) {
-						for (int z = 0; z < r1; z++) {
-							maze[x][z] |= CellInterpreter.setRoomTypeMask(maze[x][z], roomMarker[x][z]);
-						}
-					}
+					var r = RandomSource.create(roomSeed);
+					var grid = strategy.new Grid(r, col.styles[y], maze);
+					strategy.new Scanner(maze, grid).scan(r);
+					strategy.new Marker(r, grid, maze).mark();
 				}
 
 			}

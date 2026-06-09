@@ -16,8 +16,16 @@ import java.util.*;
 @SerialClass
 public class TemplateConfig extends BaseConfig {
 
+	public static TemplateConfig get() {
+		return DungeonInfinity.TEMPLATES.getMerged();
+	}
+
 	public static CompiledSet of(String path) {
-		return DungeonInfinity.TEMPLATES.getMerged().cache.get(path);
+		return get().cache.get(path);
+	}
+
+	public static CompiledSet of(int cell) {
+		return get().indexed[TemplateMapper.getTemplateIndex(cell)];
 	}
 
 	@ConfigCollect(CollectType.MAP_OVERWRITE)
@@ -25,12 +33,40 @@ public class TemplateConfig extends BaseConfig {
 	public final LinkedHashMap<String, LinkedHashMap<Identifier, TemplateData>> templates = new LinkedHashMap<>();
 
 	private final LinkedHashMap<String, CompiledSet> cache = new LinkedHashMap<>();
+	private CompiledSet[] indexed;
+	private String[] ids;
+	private Map<String, Integer> revMap;
 
 	@Override
 	protected void postMerge() {
-		for (var ent : templates.entrySet()) {
-			cache.put(ent.getKey(), new CompiledSet(ent.getValue()));
+		Set<String> styles = new LinkedHashSet<>();
+		for (var sub : templates.values())
+			for (var key : sub.keySet())
+				styles.add(key.getNamespace());
+		List<String> keys = new ArrayList<>(styles);
+		keys.sort(Comparator.comparing(e -> e));
+		int n = keys.size();
+		ids = new String[n];
+		revMap = new LinkedHashMap<>();
+		for (int i = 0; i < n; i++) {
+			ids[i] = keys.get(i);
+			revMap.put(ids[i], i);
 		}
+		for (var ent : templates.entrySet()) {
+			cache.put(ent.getKey(), new CompiledSet(ids, ent.getValue()));
+		}
+		indexed = new CompiledSet[TemplateMapper.ROOMS.length];
+		for (int i = 0; i < indexed.length; i++) {
+			indexed[i] = cache.get(TemplateMapper.ROOMS[i]);
+		}
+	}
+
+	public int styleCount() {
+		return ids.length;
+	}
+
+	public int styleIndex(String style) {
+		return revMap.getOrDefault(style, 0);
 	}
 
 	public StyleBuilder start(String style) {
@@ -46,26 +82,19 @@ public class TemplateConfig extends BaseConfig {
 		private final String[] ids;
 		private final CompiledRoom[] data;
 
-		private CompiledSet(Map<Identifier, TemplateData> map) {
+		private CompiledSet(String[] ids, Map<Identifier, TemplateData> map) {
 			Map<String, List<Pair<String, TemplateData>>> split = new LinkedHashMap<>();
 			for (var ent : map.entrySet()) {
 				var id = ent.getKey();
 				split.computeIfAbsent(id.getNamespace(), _ -> new ArrayList<>())
 						.add(Pair.of(id.getPath(), ent.getValue()));
 			}
-			List<String> keys = new ArrayList<>(split.keySet());
-			keys.sort(Comparator.comparing(e -> e));
-			int n = keys.size();
-			ids = new String[n];
+			int n = ids.length;
+			this.ids = ids;
 			data = new CompiledRoom[n];
 			for (int i = 0; i < n; i++) {
-				ids[i] = keys.get(i);
 				data[i] = new CompiledRoom(split.get(ids[i]));
 			}
-		}
-
-		public int styleCount() {
-			return ids.length;
 		}
 
 		public int variantCount(int i) {

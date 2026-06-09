@@ -65,6 +65,22 @@ public class CellInterpreter {
 		return (style << 13) | (variant << 21);
 	}
 
+
+	public static final int SPECIAL = 1, HALLWAY = 2, ROOM = 3;
+
+	/**
+	 * 1: special
+	 * 2: hallway
+	 * 3: room
+	 */
+	public static int getRoomMarker(int cell, int flag) {
+		return switch (flag) {
+			case 1 -> ROOM + 1;
+			case 2 -> HALLWAY;
+			default -> SPECIAL;
+		};
+	}
+
 	/**
 	 * 0: illegal
 	 * 1: room only
@@ -79,21 +95,6 @@ public class CellInterpreter {
 			case 6, 8 -> 2;
 			case 2, 3, 4, 5 -> 3;
 			default -> 0;
-		};
-	}
-
-	public static final int SPECIAL = 1, HALLWAY = 2, ROOM = 3;
-
-	/**
-	 * 1: special
-	 * 2: hallway
-	 * 3: room
-	 */
-	public static int getRoomMarker(int cell, int flag) {
-		return switch (flag) {
-			case 1 -> ROOM;
-			case 2 -> HALLWAY;
-			default -> SPECIAL;
 		};
 	}
 
@@ -149,15 +150,14 @@ public class CellInterpreter {
 		};
 	}
 
-	public static CellInstance getTemplate(int cell) {
-		CellInstance ans;
+	public static CellInstance getTemplateBase(int cell) {
 		if (isBossRoom(cell)) {
 			int room = getBossRoom(cell);
-			ans = room == 4 ? BOSS : SKIP;
+			return room == 4 ? BOSS : SKIP;
 		} else if (isQuadRoom(cell)) {
 			int quad = getQuadRoom(cell);
 			int open = getOpenings(cell);
-			ans = switch (open) {
+			return switch (open) {
 				case 9, 5, 6, 10 -> SKIP;
 				case 13 -> QUAD.mirror(quad == 2, Mirror.LEFT_RIGHT);
 				case 7 -> QUAD.with(Rotation.CLOCKWISE_90).mirror(quad == 3, Mirror.LEFT_RIGHT);
@@ -168,7 +168,7 @@ public class CellInterpreter {
 		} else {
 			int open = getOpenings(cell);
 			var room = getRoomName(cell);
-			ans = switch (open) {
+			var ans = switch (open) {
 				case 1 -> END;
 				case 2 -> END.with(Rotation.CLOCKWISE_180);
 				case 3 -> STRAIGHT;
@@ -198,7 +198,12 @@ public class CellInterpreter {
 			if (open < 16) {
 				ans = ans.room(room);
 			}
+			return ans;
 		}
+	}
+
+	public static CellInstance getTemplate(int cell) {
+		var ans = getTemplateBase(cell);
 		if (ans == SKIP || ans == MISSING) return ans;
 		int style = getStyle(cell);
 		int variant = getVariant(cell);
