@@ -10,6 +10,8 @@ import java.util.*;
 
 public class RoomProcessorStrategy {
 
+	private static final String[] STYLES = {"sculk", "deepslate", "copper", "mineshaft", "stone"};
+
 	private final int r1;
 
 	public RoomProcessorStrategy(int r1) {
@@ -30,7 +32,7 @@ public class RoomProcessorStrategy {
 	}
 
 	public int getMaxQuadRoom(int max) {
-		return Math.clamp((int) (max * 0.8f), Math.min(max, 5), 8);
+		return Math.clamp((int) (max * 0.8f), Math.min(max, 5), 10);
 	}
 
 	public float getHallLargeRoomChance() {
@@ -38,7 +40,7 @@ public class RoomProcessorStrategy {
 	}
 
 	public int getBossRoomCount() {
-		return 5;
+		return 4;
 	}
 
 	public MazeGen genMaze(int rad, long regionSeed) {
@@ -49,6 +51,10 @@ public class RoomProcessorStrategy {
 		var ans = new MazeGen(rad / 2, IRandom.parse(new Random(regionSeed)), config, new MazeGen.Debugger());
 		ans.gen();
 		return ans;
+	}
+
+	public int getStyleForLayer(int layer) {
+		return TemplateConfig.get().styleIndex(STYLES[layer]);
 	}
 
 	public class StairGen {

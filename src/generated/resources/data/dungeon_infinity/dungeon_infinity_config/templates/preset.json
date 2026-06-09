@@ -1,67 +1,223 @@
 {
   "templates": {
     "boss": {
-      "test:": {
+      "copper:": {
+        "weight": 100
+      },
+      "deepslate:": {
+        "weight": 100
+      },
+      "mineshaft:": {
+        "weight": 100
+      },
+      "sculk:": {
+        "weight": 100
+      },
+      "stone:": {
         "weight": 100
       }
     },
     "cross_stairs": {
-      "test:": {
+      "copper:": {
+        "weight": 100
+      },
+      "deepslate:": {
+        "weight": 100
+      },
+      "mineshaft:": {
+        "weight": 100
+      },
+      "sculk:": {
+        "weight": 100
+      },
+      "stone:": {
         "weight": 100
       }
     },
     "path/corner": {
-      "test:": {
+      "copper:": {
+        "weight": 100
+      },
+      "deepslate:": {
+        "weight": 100
+      },
+      "mineshaft:": {
+        "weight": 100
+      },
+      "sculk:": {
+        "weight": 100
+      },
+      "stone:": {
         "weight": 100
       }
     },
     "path/cross": {
-      "test:": {
+      "copper:": {
+        "weight": 100
+      },
+      "deepslate:": {
+        "weight": 100
+      },
+      "mineshaft:": {
+        "weight": 100
+      },
+      "sculk:": {
+        "weight": 100
+      },
+      "stone:": {
         "weight": 100
       }
     },
     "path/straight": {
-      "test:": {
+      "copper:": {
+        "weight": 100
+      },
+      "deepslate:": {
+        "weight": 100
+      },
+      "mineshaft:": {
+        "weight": 100
+      },
+      "sculk:": {
+        "weight": 100
+      },
+      "stone:": {
         "weight": 100
       }
     },
     "path/t_way": {
-      "test:": {
+      "copper:": {
+        "weight": 100
+      },
+      "deepslate:": {
+        "weight": 100
+      },
+      "mineshaft:": {
+        "weight": 100
+      },
+      "sculk:": {
+        "weight": 100
+      },
+      "stone:": {
         "weight": 100
       }
     },
     "quad": {
-      "test:": {
+      "copper:": {
+        "weight": 100
+      },
+      "deepslate:": {
+        "weight": 100
+      },
+      "mineshaft:": {
+        "weight": 100
+      },
+      "sculk:": {
+        "weight": 100
+      },
+      "stone:": {
         "weight": 100
       }
     },
     "room/corner": {
-      "test:": {
+      "copper:": {
+        "weight": 100
+      },
+      "deepslate:": {
+        "weight": 100
+      },
+      "mineshaft:": {
+        "weight": 100
+      },
+      "sculk:": {
+        "weight": 100
+      },
+      "stone:": {
         "weight": 100
       }
     },
     "room/cross": {
-      "test:": {
+      "copper:": {
+        "weight": 100
+      },
+      "deepslate:": {
+        "weight": 100
+      },
+      "mineshaft:": {
+        "weight": 100
+      },
+      "sculk:": {
+        "weight": 100
+      },
+      "stone:": {
         "weight": 100
       }
     },
     "room/end": {
-      "test:": {
+      "copper:": {
+        "weight": 100
+      },
+      "deepslate:": {
+        "weight": 100
+      },
+      "mineshaft:": {
+        "weight": 100
+      },
+      "sculk:": {
+        "weight": 100
+      },
+      "stone:": {
         "weight": 100
       }
     },
     "room/straight": {
-      "test:": {
+      "copper:": {
+        "weight": 100
+      },
+      "deepslate:": {
+        "weight": 100
+      },
+      "mineshaft:": {
+        "weight": 100
+      },
+      "sculk:": {
+        "weight": 100
+      },
+      "stone:": {
         "weight": 100
       }
     },
     "room/t_way": {
-      "test:": {
+      "copper:": {
+        "weight": 100
+      },
+      "deepslate:": {
+        "weight": 100
+      },
+      "mineshaft:": {
+        "weight": 100
+      },
+      "sculk:": {
+        "weight": 100
+      },
+      "stone:": {
         "weight": 100
       }
     },
     "stairs": {
-      "test:": {
+      "copper:": {
+        "weight": 100
+      },
+      "deepslate:": {
+        "weight": 100
+      },
+      "mineshaft:": {
+        "weight": 100
+      },
+      "sculk:": {
+        "weight": 100
+      },
+      "stone:": {
         "weight": 100
       }
     }

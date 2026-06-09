@@ -248,6 +248,11 @@ public class MazeDimHolder {
 					bossRoom[layer + 1] = 2;
 					layer += 2;
 				}
+				layer = 0;
+				for (int i = 0; i < y1; i++) {
+					if (bossRoom[i] == 2) layer++;
+					styles[i] = strategy.getStyleForLayer(layer);
+				}
 			}
 
 			public void check() {
