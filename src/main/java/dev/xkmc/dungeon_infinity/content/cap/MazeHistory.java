@@ -1,5 +1,7 @@
 package dev.xkmc.dungeon_infinity.content.cap;
 
+import dev.xkmc.dungeon_infinity.content.chunkgen.MazeChunkGenerator;
+import dev.xkmc.dungeon_infinity.init.DungeonInfinity;
 import dev.xkmc.dungeon_infinity.init.data.DIDimensionGen;
 import dev.xkmc.l2core.capability.player.PlayerCapabilityTemplate;
 import dev.xkmc.l2serial.serialization.marker.SerialClass;
@@ -21,6 +23,9 @@ public class MazeHistory extends PlayerCapabilityTemplate<MazeHistory> {
 
 	@SerialField
 	public @Nullable BlockPos activeMobRoom = null;
+
+	@SerialField
+	public int radius = 1;
 
 	public boolean inMazeDim(Player player) {
 		return player.level().dimension().identifier().equals(DIDimensionGen.LEVEL_MAZE.identifier());
@@ -50,7 +55,17 @@ public class MazeHistory extends PlayerCapabilityTemplate<MazeHistory> {
 		}
 		var pos = MazePos.map(player.blockPosition());
 		var ent = data.computeIfAbsent(pos.key(), k -> new Visit());
-		ent.visit(pos);
+		if (player instanceof ServerPlayer sp) {
+			if (sp.level().getChunkSource().getGenerator() instanceof MazeChunkGenerator maze) {
+				var dim = maze.getMaze(sp.level().getChunkSource().randomState());
+				int rad = dim.getVisibility(pos) / 2 + 1;
+				if (rad != radius) {
+					DungeonInfinity.HANDLER.toClientPlayer(new SetRadiusPacket(rad), sp);
+				}
+				radius = rad;
+			}
+		}
+		ent.visit(pos, radius);
 		if (player instanceof ServerPlayer sp) {
 			var sec = MazeRoomData.get(sp.level(), SectionPos.of(sp.blockPosition()));
 			if (sec != null) {
@@ -64,6 +79,10 @@ public class MazeHistory extends PlayerCapabilityTemplate<MazeHistory> {
 
 	public Visit getOrCreate(MazePos pos) {
 		return data.computeIfAbsent(pos.key(), k -> new Visit());
+	}
+
+	public void setRadius(int rad) {
+		this.radius = rad;
 	}
 
 	@SerialClass
@@ -100,7 +119,7 @@ public class MazeHistory extends PlayerCapabilityTemplate<MazeHistory> {
 			return (visibleGrid[i] & j) != 0;
 		}
 
-		public void visit(MazePos pos) {
+		public void visit(MazePos pos, int m) {
 			int x = pos.px() >> 4;
 			int z = pos.pz() >> 4;
 			int index = x * R + z;
@@ -110,7 +129,7 @@ public class MazeHistory extends PlayerCapabilityTemplate<MazeHistory> {
 			visitedGrid[i] |= j;
 			visited++;
 			int old = revision;
-			markVisible(x - 1, z - 1, 3, 3);
+			markVisible(x - m, z - m, m * 2 + 1, m * 2 + 1);
 			revision = old + 1;
 		}
 

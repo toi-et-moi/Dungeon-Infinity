@@ -1,5 +1,6 @@
 package dev.xkmc.dungeon_infinity.content.chunkgen;
 
+import dev.xkmc.dungeon_infinity.content.cap.MazePos;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.core.Direction;
@@ -10,9 +11,16 @@ import net.minecraft.world.level.ChunkPos;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Random;
 
 public class MazeDimHolder {
+
+	public static final Map<Long, MazeDimHolder> cache = new Long2ObjectOpenHashMap<>();
+
+	public static MazeDimHolder get(long seed) {
+		return cache.computeIfAbsent(seed, MazeDimHolder::new);
+	}
 
 	private final int r1 = 25;
 	private final int r2 = 25;
@@ -55,6 +63,15 @@ public class MazeDimHolder {
 			ans[i] = stack.getRegion(i).getRegion(cx, cz).getCellType(rx, rz);
 		}
 		return ans;
+	}
+
+	public synchronized int getVisibility(MazePos pos) {
+		int x2 = Mth.floorDiv(pos.x(), r2);
+		int z2 = Mth.floorDiv(pos.z(), r2);
+		var stack = get(x2, z2);
+		var col = stack.getColumn(pos.x() - x2 * r2, pos.z() - z2 * r1);
+		col.check();
+		return col.visibility[pos.y()];
 	}
 
 	public class RegionStack {
@@ -222,6 +239,7 @@ public class MazeDimHolder {
 			private final int cx, cz;
 			private final int[] bossRoom = new int[y1];
 			private final int[] styles = new int[y1];
+			private final int[] visibility = new int[y1];
 			private final long stairSeed;
 
 			private boolean checked = false;
@@ -252,6 +270,7 @@ public class MazeDimHolder {
 				for (int i = 0; i < y1; i++) {
 					if (bossRoom[i] == 2) layer++;
 					styles[i] = strategy.getStyleForLayer(layer);
+					visibility[i] = layer + 1;
 				}
 			}
 
