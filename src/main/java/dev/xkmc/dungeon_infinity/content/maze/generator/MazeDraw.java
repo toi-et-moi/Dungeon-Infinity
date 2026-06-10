@@ -1,5 +1,6 @@
 package dev.xkmc.dungeon_infinity.content.maze.generator;
 
+import dev.xkmc.dungeon_infinity.content.chunkgen.RoomProcessorStrategy;
 import dev.xkmc.dungeon_infinity.content.maze.objective.LeafMarker;
 import dev.xkmc.dungeon_infinity.content.maze.objective.MazeIterator;
 import dev.xkmc.dungeon_infinity.content.maze.objective.MazeRegistry;
@@ -48,19 +49,21 @@ public class MazeDraw {
 	}
 
 	public static void perform(MazeConfig config) throws IOException {
-		MazeGen maze = new MazeGen(12, IRandom.parse(new Random()), config, new MazeGen.Debugger());
+		var rand = IRandom.parse(new Random());
+		MazeGen maze = new MazeGen(12, rand, config, new MazeGen.Debugger());
 		maze.gen();
 		for (MazeRegistry.Entry<?, ?> ent : MazeRegistry.LIST) {
 			double ans = ent.execute(maze.ans, maze.r, maze.r);
 			System.out.println(ent.name + ": " + ans);
 		}
 		MazeIterator<LeafMarker, LeafMarker.LeafSetData> itr = MazeRegistry.MARKER.generate(maze.ans, maze.r, maze.r);
+		new RoomProcessorStrategy(25).enhanceConnections(12, maze.ans, rand);
 		drawPNG(maze, itr.global, itr.value);
 	}
 
 	public static MazeConfig readConfig() throws IOException {
 		File in = new File("./temp/in.txt");
-		if (!in.exists())return new MazeConfig();
+		if (!in.exists()) return new MazeConfig();
 		List<String> list = Files.readAllLines(in.toPath());
 		String[] l0 = list.get(0).split(":")[1].trim().split(" ");
 		int[] i0 = new int[l0.length];

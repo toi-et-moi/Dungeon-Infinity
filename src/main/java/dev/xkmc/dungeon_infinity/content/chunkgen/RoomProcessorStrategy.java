@@ -1,9 +1,13 @@
 package dev.xkmc.dungeon_infinity.content.chunkgen;
 
+import com.mojang.datafixers.util.Pair;
 import dev.xkmc.dungeon_infinity.content.config.TemplateConfig;
 import dev.xkmc.dungeon_infinity.content.maze.generator.IRandom;
 import dev.xkmc.dungeon_infinity.content.maze.generator.MazeConfig;
 import dev.xkmc.dungeon_infinity.content.maze.generator.MazeGen;
+import dev.xkmc.dungeon_infinity.content.maze.objective.BranchMarker;
+import dev.xkmc.dungeon_infinity.content.maze.objective.FarpointObjective;
+import dev.xkmc.dungeon_infinity.content.maze.objective.MazeRegistry;
 import net.minecraft.util.RandomSource;
 
 import java.util.*;
@@ -55,6 +59,82 @@ public class RoomProcessorStrategy {
 
 	public int getStyleForLayer(int layer) {
 		return TemplateConfig.get().styleIndex(STYLES[layer]);
+	}
+
+	public void enhanceConnections(int r, int[][] maze, IRandom rand) {
+		new ConnectionGen(maze, rand).enhanceConnections();
+	}
+
+	private class ConnectionGen {
+
+		private final int r = r1 / 2;
+		private final int[][] maze;
+		private final BranchMarker[][] branch;
+		private final FarpointObjective[][] dist;
+		private final IRandom rand;
+		private final Map<Integer, Pair<Integer, Integer>> map = new LinkedHashMap<>();
+
+		private ConnectionGen(int[][] maze, IRandom rand) {
+			this.maze = maze;
+			this.rand = rand;
+			dist = MazeRegistry.FAR.generate(maze, r, r).value;
+			branch = MazeRegistry.BRANCH.generate(maze, r, r).value;
+			branch[r - 1][r].color = 1;
+			branch[r + 1][r].color = 2;
+			branch[r][r - 1].color = 3;
+			branch[r][r + 1].color = 4;
+		}
+
+		private boolean isCenter(int x, int z) {
+			return x >= r - 2 && x <= r + 2 && z >= r - 2 && z <= r + 2;
+		}
+
+		private boolean isEnd(int cell) {
+			return cell == 1 || cell == 2 || cell == 4 || cell == 8;
+		}
+
+		private int openCount(int cell) {
+			int count = 0;
+			if ((cell & 1) != 0) count++;
+			if ((cell & 2) != 0) count++;
+			if ((cell & 4) != 0) count++;
+			if ((cell & 8) != 0) count++;
+			return count;
+		}
+
+		private void enhanceConnections() {
+			for (int x = 0; x < r * 2 + 1; x++) {
+				for (int z = 0; z < r * 2 + 1; z++) {
+					if (isCenter(x, z)) continue;
+					var cell = maze[x][z];
+					if (!isEnd(cell)) continue;
+					if (cell != 1 && x > 0) find(x, z, x - 1, z, 1);
+					if (cell != 4 && z > 0) find(x, z, x, z - 1, 4);
+				}
+			}
+			for (var pair : map.values()) {
+				int flag = pair.getSecond();
+				int dir = flag >> 16;
+				int p0 = flag & 0xFFFF;
+				int x = p0 / r1;
+				int z = p0 % r1;
+				maze[x][z] |= dir;
+				if (dir == 1) maze[x - 1][z] |= 2;
+				if (dir == 4) maze[x][z - 1] |= 8;
+			}
+		}
+
+		private void find(int x0, int z0, int x1, int z1, int dir) {
+			if (isCenter(x1, z1)) return;
+			int b0 = branch[x0][z0].getColor();
+			int b1 = branch[x1][z1].getColor();
+			if (b0 == b1) return;
+			int b = (1 << b0) | (1 << b1);
+			int p0 = x0 * r1 + z0;
+			int dis = Math.min(dist[x0][z0].to_root, dist[x1][z1].to_root);
+			map.compute(b, (_, old) -> old == null || old.getFirst() < dis ? Pair.of(dis, dir << 16 | p0) : old);
+		}
+
 	}
 
 	public class StairGen {

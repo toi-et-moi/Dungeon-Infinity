@@ -45,4 +45,6 @@ public class MazeRegistry {
 			ComplexBranchObjective.class, ComplexBranchObjective::new, MazeGeneralData::new);
 	public static final Entry<LeafMarker, LeafMarker.LeafSetData> MARKER = new Entry<>("leaf marker",
 			LeafMarker.class, LeafMarker::new, LeafMarker.LeafSetData::new);
+	public static final Entry<BranchMarker, MazeGeneralData> BRANCH = new Entry<>("branch",
+			BranchMarker.class, BranchMarker::new, MazeGeneralData::new);
 }
