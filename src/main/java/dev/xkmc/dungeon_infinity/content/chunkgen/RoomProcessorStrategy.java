@@ -426,7 +426,7 @@ public class RoomProcessorStrategy {
 				if ((c & 1) != 0 && px > 0) tryAdd(px - 1, pz);
 				if ((c & 2) != 0 && px < r1 - 1) tryAdd(px + 1, pz);
 				if ((c & 4) != 0 && pz > 0) tryAdd(px, pz - 1);
-				if ((c & 8) != 0 && pz > r1 - 1) tryAdd(px, pz + 1);
+				if ((c & 8) != 0 && pz < r1 - 1) tryAdd(px, pz + 1);
 			}
 			return list;
 		}

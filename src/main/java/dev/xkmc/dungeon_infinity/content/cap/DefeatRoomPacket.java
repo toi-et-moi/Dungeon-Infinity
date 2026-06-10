@@ -6,7 +6,9 @@ import net.minecraft.world.entity.player.Player;
 
 import java.util.ArrayList;
 
-public record DefeatRoomPacket(ArrayList<MazePos> list) implements SerialPacketBase<DefeatRoomPacket> {
+public record DefeatRoomPacket(
+		ArrayList<MazePos> list, boolean clearAll
+) implements SerialPacketBase<DefeatRoomPacket> {
 
 	@Override
 	public void handle(Player player) {
@@ -14,6 +16,8 @@ public record DefeatRoomPacket(ArrayList<MazePos> list) implements SerialPacketB
 		for (var e : list) {
 			data.getOrCreate(e).defeat(e);
 		}
+		if (list.isEmpty()) return;
+		data.getOrCreate(list.getFirst()).markVisible(0, 0, 25, 25);
 	}
 
 }

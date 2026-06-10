@@ -100,8 +100,11 @@ public class MobRoomTicker {
 					var mp = MazePos.map(r.getBlockPos());
 					data.getOrCreate(mp).defeat(mp);
 				}
+				if (ins.holder.isLarge()) {
+					data.getOrCreate(MazePos.map(ins.holder.getBlockPos())).markVisible(0, 0, 25, 25);
+				}
 				data.activeMobRoom = null;
-				DungeonInfinity.HANDLER.toClientPlayer(new DefeatRoomPacket(points), e);
+				DungeonInfinity.HANDLER.toClientPlayer(new DefeatRoomPacket(points, ins.holder.isLarge()), e);
 			}
 			for (var r : ins.list) {
 				r.ins = null;

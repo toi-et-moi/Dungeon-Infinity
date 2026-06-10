@@ -98,6 +98,11 @@ public class SectionRoom {
 		}
 	}
 
+	public boolean isLarge() {
+		int cell = maze[x][z];
+		return CellInterpreter.isBossRoom(cell) || CellInterpreter.isQuadRoom(cell);
+	}
+
 	public @Nullable SectionRoom[][][] findRoom() {
 		int cell = maze[x][z];
 		if (CellInterpreter.isBossRoom(cell)) {
