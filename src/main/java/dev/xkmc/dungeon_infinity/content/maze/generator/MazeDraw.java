@@ -49,7 +49,9 @@ public class MazeDraw {
 	}
 
 	public static void perform(MazeConfig config) throws IOException {
-		var rand = IRandom.parse(new Random());
+		long seed = 5333191922484398815L;//new Random().nextLong();
+		System.out.println("Seed: " + seed);
+		var rand = IRandom.parse(new Random(seed));
 		MazeGen maze = new MazeGen(12, rand, config, new MazeGen.Debugger());
 		maze.gen();
 		for (MazeRegistry.Entry<?, ?> ent : MazeRegistry.LIST) {
@@ -57,7 +59,7 @@ public class MazeDraw {
 			System.out.println(ent.name + ": " + ans);
 		}
 		MazeIterator<LeafMarker, LeafMarker.LeafSetData> itr = MazeRegistry.MARKER.generate(maze.ans, maze.r, maze.r);
-		new RoomProcessorStrategy(25).enhanceConnections(12, maze.ans, rand);
+		new RoomProcessorStrategy(25).enhanceConnections(maze.ans);
 		drawPNG(maze, itr.global, itr.value);
 	}
 

@@ -6,7 +6,6 @@ import dev.xkmc.dungeon_infinity.content.maze.generator.IRandom;
 import dev.xkmc.dungeon_infinity.content.maze.generator.MazeConfig;
 import dev.xkmc.dungeon_infinity.content.maze.generator.MazeGen;
 import dev.xkmc.dungeon_infinity.content.maze.objective.BranchMarker;
-import dev.xkmc.dungeon_infinity.content.maze.objective.FarpointObjective;
 import dev.xkmc.dungeon_infinity.content.maze.objective.MazeRegistry;
 import net.minecraft.util.RandomSource;
 
@@ -54,6 +53,7 @@ public class RoomProcessorStrategy {
 		config.invarianceRim = new int[][]{{0, 1, 2, 3, 4, 5, 6, 7}, {0, 4, 8, 12, 1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15}};
 		var ans = new MazeGen(rad / 2, IRandom.parse(new Random(regionSeed)), config, new MazeGen.Debugger());
 		ans.gen();
+		enhanceConnections(ans.ans);
 		return ans;
 	}
 
@@ -61,8 +61,8 @@ public class RoomProcessorStrategy {
 		return TemplateConfig.get().styleIndex(STYLES[layer]);
 	}
 
-	public void enhanceConnections(int r, int[][] maze, IRandom rand) {
-		new ConnectionGen(maze, rand).enhanceConnections();
+	public void enhanceConnections(int[][] maze) {
+		new ConnectionGen(maze).enhanceConnections();
 	}
 
 	private class ConnectionGen {
@@ -70,19 +70,19 @@ public class RoomProcessorStrategy {
 		private final int r = r1 / 2;
 		private final int[][] maze;
 		private final BranchMarker[][] branch;
-		private final FarpointObjective[][] dist;
-		private final IRandom rand;
 		private final Map<Integer, Pair<Integer, Integer>> map = new LinkedHashMap<>();
 
-		private ConnectionGen(int[][] maze, IRandom rand) {
+		private ConnectionGen(int[][] maze) {
 			this.maze = maze;
-			this.rand = rand;
-			dist = MazeRegistry.FAR.generate(maze, r, r).value;
 			branch = MazeRegistry.BRANCH.generate(maze, r, r).value;
 			branch[r - 1][r].color = 1;
 			branch[r + 1][r].color = 2;
 			branch[r][r - 1].color = 3;
 			branch[r][r + 1].color = 4;
+			branch[r - 1][r].dist = 0;
+			branch[r + 1][r].dist = 0;
+			branch[r][r - 1].dist = 0;
+			branch[r][r + 1].dist = 0;
 		}
 
 		private boolean isCenter(int x, int z) {
@@ -93,23 +93,16 @@ public class RoomProcessorStrategy {
 			return cell == 1 || cell == 2 || cell == 4 || cell == 8;
 		}
 
-		private int openCount(int cell) {
-			int count = 0;
-			if ((cell & 1) != 0) count++;
-			if ((cell & 2) != 0) count++;
-			if ((cell & 4) != 0) count++;
-			if ((cell & 8) != 0) count++;
-			return count;
-		}
-
 		private void enhanceConnections() {
-			for (int x = 0; x < r * 2 + 1; x++) {
-				for (int z = 0; z < r * 2 + 1; z++) {
+			for (int x = 0; x < r1; x++) {
+				for (int z = 0; z < r1; z++) {
 					if (isCenter(x, z)) continue;
 					var cell = maze[x][z];
 					if (!isEnd(cell)) continue;
-					if (cell != 1 && x > 0) find(x, z, x - 1, z, 1);
-					if (cell != 4 && z > 0) find(x, z, x, z - 1, 4);
+					if ((cell & 1) == 0 && x > 0) find(x, z, x - 1, z, 1);
+					if ((cell & 2) == 0 && x < r1 - 1) find(x, z, x + 1, z, 2);
+					if ((cell & 4) == 0 && z > 0) find(x, z, x, z - 1, 4);
+					if ((cell & 8) == 0 && z < r1 - 1) find(x, z, x, z + 1, 8);
 				}
 			}
 			for (var pair : map.values()) {
@@ -120,7 +113,9 @@ public class RoomProcessorStrategy {
 				int z = p0 % r1;
 				maze[x][z] |= dir;
 				if (dir == 1) maze[x - 1][z] |= 2;
+				if (dir == 2) maze[x + 1][z] |= 1;
 				if (dir == 4) maze[x][z - 1] |= 8;
+				if (dir == 8) maze[x][z + 1] |= 4;
 			}
 		}
 
@@ -131,7 +126,7 @@ public class RoomProcessorStrategy {
 			if (b0 == b1) return;
 			int b = (1 << b0) | (1 << b1);
 			int p0 = x0 * r1 + z0;
-			int dis = Math.min(dist[x0][z0].to_root, dist[x1][z1].to_root);
+			int dis = Math.min(branch[x0][z0].dist(), branch[x1][z1].dist());
 			map.compute(b, (_, old) -> old == null || old.getFirst() < dis ? Pair.of(dis, dir << 16 | p0) : old);
 		}
 
