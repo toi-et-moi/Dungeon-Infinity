@@ -56,13 +56,17 @@ public class MazeWallBlock {
 	public static final BooleanProperty[] PROPS = {BlockStateProperties.DOWN, BlockStateProperties.UP,
 			BlockStateProperties.NORTH, BlockStateProperties.SOUTH,
 			BlockStateProperties.WEST, BlockStateProperties.EAST};
-	private static final Map<Direction, BooleanProperty> MAP = Map.of(
+	public static final Map<Direction, BooleanProperty> MAP = Map.of(
 			Direction.DOWN, BlockStateProperties.DOWN,
 			Direction.UP, BlockStateProperties.UP,
 			Direction.NORTH, BlockStateProperties.NORTH,
 			Direction.SOUTH, BlockStateProperties.SOUTH,
 			Direction.WEST, BlockStateProperties.WEST,
 			Direction.EAST, BlockStateProperties.EAST);
+
+	public static boolean isAffinitive(BlockState neighbor) {
+		return neighbor.is(DITagGen.MAZE_STONE_AFFINITIVE);
+	}
 
 	public static class Neighbor implements NeighborUpdateBlockMethod {
 
@@ -195,10 +199,6 @@ public class MazeWallBlock {
 			if (self != state) {
 				level.setBlock(pos, self, 18);
 			}
-		}
-
-		private boolean isAffinitive(BlockState neighbor) {
-			return neighbor.is(DITagGen.MAZE_STONE_AFFINITIVE);
 		}
 
 		@Override

@@ -1,6 +1,7 @@
 package dev.xkmc.dungeon_infinity.content.config;
 
 import com.mojang.datafixers.util.Pair;
+import dev.xkmc.dungeon_infinity.content.chunkgen.CellInterpreter;
 import dev.xkmc.dungeon_infinity.init.DungeonInfinity;
 import dev.xkmc.l2core.serial.config.BaseConfig;
 import dev.xkmc.l2core.serial.config.CollectType;
@@ -10,6 +11,7 @@ import dev.xkmc.l2serial.serialization.marker.SerialField;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.WeightedList;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -26,6 +28,12 @@ public class TemplateConfig extends BaseConfig {
 
 	public static CompiledSet of(int cell) {
 		return get().indexed[TemplateMapper.getTemplateIndex(cell)];
+	}
+
+	public static TemplateData getEntry(int cell) {
+		return get().indexed[TemplateMapper.getTemplateIndex(cell)]
+				.data[CellInterpreter.getStyle(cell)]
+				.data[CellInterpreter.getVariant(cell)];
 	}
 
 	@ConfigCollect(CollectType.MAP_OVERWRITE)
@@ -73,7 +81,11 @@ public class TemplateConfig extends BaseConfig {
 		return new StyleBuilder(this, style);
 	}
 
-	public record TemplateData(int weight) {
+	public record TemplateData(int weight, @Nullable Identifier spawn) {
+
+		public TemplateData() {
+			this(100, null);
+		}
 
 	}
 
@@ -168,8 +180,12 @@ public class TemplateConfig extends BaseConfig {
 		}
 
 		public VariantBuilder variant(String suffix, int weight) {
+			return variant(suffix, weight, null);
+		}
+
+		public VariantBuilder variant(String suffix, int weight, @Nullable Identifier id) {
 			parent.config.templates.computeIfAbsent(room, k -> new LinkedHashMap<>())
-					.put(Identifier.fromNamespaceAndPath(parent.style, suffix), new TemplateData(weight));
+					.put(Identifier.fromNamespaceAndPath(parent.style, suffix), new TemplateData(weight, id));
 			return this;
 		}
 

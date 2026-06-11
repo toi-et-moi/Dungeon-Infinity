@@ -4,6 +4,8 @@ import dev.xkmc.dungeon_infinity.content.chunkgen.CellInterpreter;
 import dev.xkmc.dungeon_infinity.content.chunkgen.MazeChunkGenerator;
 import dev.xkmc.dungeon_infinity.content.chunkgen.MazeDimHolder;
 import dev.xkmc.dungeon_infinity.content.chunkgen.RoomProcessorStrategy;
+import dev.xkmc.dungeon_infinity.content.config.TemplateConfig;
+import dev.xkmc.dungeon_infinity.content.spawn.SpawnHelper;
 import dev.xkmc.dungeon_infinity.init.data.DITagGen;
 import dev.xkmc.dungeon_infinity.init.reg.DIItems;
 import dev.xkmc.l2serial.serialization.marker.SerialClass;
@@ -29,6 +31,7 @@ public class SectionRoom {
 	private LevelChunk lc;
 	private SectionPos pos;
 	private MazeDimHolder dim;
+	private TemplateConfig.TemplateData info;
 	private int[][] maze;
 	private int x, z;
 
@@ -45,6 +48,7 @@ public class SectionRoom {
 			maze = dim.getRegion(rx, pos.y(), rz);
 			x = pos.x() - rx * 25;
 			z = pos.z() - rz * 25;
+			info = TemplateConfig.getEntry(maze[x][z]);
 		}
 	}
 
@@ -163,6 +167,12 @@ public class SectionRoom {
 				ins.tick(sp);
 			}
 		}
+	}
+
+	public MobRoomTicker createSpawner(@Nullable SectionRoom[][][] rooms) {
+		var ans = new MobRoomTicker();
+		ans.spawner = SpawnHelper.createTickerFromTemplate(info, rooms);
+		return ans;
 	}
 
 }

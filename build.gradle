@@ -196,6 +196,8 @@ dependencies {
     implementation "dev.xkmc:modulargolems:${modulargolems_ver}"
     implementation "com.tterrag.registrate:Registrate:${registrate_ver}"
 
+    implementation "dev.xkmc:golemdungeons:${golemdungeons_ver}"
+
     // JEI
     compileOnly "mezz.jei:jei-${jei_minecraft_version}-api:${jei_version}"
     runtimeOnly "mezz.jei:jei-${jei_minecraft_version}:${jei_version}"

@@ -1,34 +1,34 @@
 package dev.xkmc.dungeon_infinity.content.cap;
 
+import dev.xkmc.dungeon_infinity.content.spawn.MobSpawnTicker;
 import dev.xkmc.dungeon_infinity.init.DungeonInfinity;
 import dev.xkmc.dungeon_infinity.init.reg.DIMeta;
 import dev.xkmc.l2serial.serialization.marker.SerialClass;
 import dev.xkmc.l2serial.serialization.marker.SerialField;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.UUID;
 
 @SerialClass
 public class MobRoomTicker {
 
-	private final Set<ServerPlayer> players = new LinkedHashSet<>();
-	private final List<LivingEntity> mobs = new LinkedList<>();
+	public final Set<ServerPlayer> players = new LinkedHashSet<>();
 
 	@SerialField
 	public final Set<UUID> playerIds = new LinkedHashSet<>();
 	@SerialField
-	public final Set<UUID> mobIds = new LinkedHashSet<>();
-	@SerialField
 	public boolean started = false;
 	@SerialField
 	public long lastTick = -1;
+	@SerialField
+	public MobSpawnTicker spawner;
 
 	public boolean isDefeated() {
-		return !players.isEmpty() && started && mobs.isEmpty();
+		return !players.isEmpty() && started && !spawner.isActive();
 	}
 
 	public void track(ServerPlayer sp) {
@@ -56,19 +56,6 @@ public class MobRoomTicker {
 			playerIds.add(e.getUUID());
 		}
 
-		mobs.clear();
-		for (var id : mobIds) {
-			var e = level.getEntity(id);
-			if (!(e instanceof LivingEntity le)) continue;
-			if (le.level() != level || !le.isAlive()) continue;
-			if (!ins.contains(le))
-				le.snapTo(ins.holder.getBlockPos().offset(8, 3, 8).getCenter());
-			mobs.add(le);
-		}
-		mobIds.clear();
-		for (var e : mobs) {
-			mobIds.add(e.getUUID());
-		}
 	}
 
 	public boolean mayStart() {
@@ -76,19 +63,6 @@ public class MobRoomTicker {
 			if (!e.isCreative()) return true;
 		}
 		return false;
-	}
-
-	private void spawn(ServerLevel level, MobRoomHolder ins) {
-		//TODO
-		for (var r : ins.list) {
-			var pos = r.getBlockPos().offset(8, 3, 8);
-			var e = EntityType.ZOMBIE.spawn(level, pos, EntitySpawnReason.TRIAL_SPAWNER);
-			if (e != null) {
-				level.addFreshEntity(e);
-				mobs.add(e);
-				mobIds.add(e.getUUID());
-			}
-		}
 	}
 
 	private void stop(MobRoomHolder ins) {
@@ -111,15 +85,11 @@ public class MobRoomTicker {
 				r.data = null;
 			}
 		}
-		for (var e : mobs) {
-			e.discard();
-		}
 		started = false;
 		ins.setWall(false);
 		players.clear();
 		playerIds.clear();
-		mobs.clear();
-		mobIds.clear();
+		spawner.stop(ins.holder.level(), ins);
 	}
 
 	public void tick(MobRoomHolder ins) {
@@ -131,10 +101,11 @@ public class MobRoomTicker {
 		if (!started && mayStart()) {
 			started = true;
 			ins.setWall(true);
-			spawn(level, ins);
+			spawner.start(level, ins);
 			DIMeta.ACTIVE.type().getOrCreate(level).activeRooms.add(ins.holder.getBlockPos());
 		}
-		if (started && (mobs.isEmpty() || players.isEmpty())) {
+		if (started) spawner.tick(level, ins);
+		if (started && (!spawner.isActive() || players.isEmpty())) {
 			stop(ins);
 		}
 	}

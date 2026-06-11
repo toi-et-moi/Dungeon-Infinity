@@ -1,0 +1,19 @@
+{
+  "generateChest": false,
+  "list": [
+    [
+      {
+        "num": 1,
+        "target": "golemdungeons:factory_humanoid_basic"
+      },
+      {
+        "num": 1,
+        "target": "golemdungeons:factory_humanoid_ranged"
+      }
+    ]
+  ],
+  "maxY": 6,
+  "minY": -4,
+  "spawnCost": 1000,
+  "triggerRange": 12
+}

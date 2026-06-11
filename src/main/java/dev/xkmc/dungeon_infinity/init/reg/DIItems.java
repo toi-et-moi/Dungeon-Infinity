@@ -3,6 +3,7 @@ package dev.xkmc.dungeon_infinity.init.reg;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import dev.xkmc.dungeon_infinity.content.block.ForceFieldBlock;
+import dev.xkmc.dungeon_infinity.content.block.MazeFillerBlock;
 import dev.xkmc.dungeon_infinity.content.block.MazeWallBlock;
 import dev.xkmc.dungeon_infinity.content.map.MazeMapItem;
 import dev.xkmc.dungeon_infinity.init.DungeonInfinity;
@@ -24,7 +25,7 @@ public class DIItems {
 			"dungeon_infinity", "Dungeon Infinity",
 			b -> b.icon(DIItems::getIcon));
 
-	public static final BlockEntry<DelegateBlock> MAZESTONE;
+	public static final BlockEntry<DelegateBlock> MAZESTONE, FILLER;
 
 	public static final BlockEntry<ForceFieldBlock> FORCEFIELD;
 	public static final BlockEntry<Block> FORCEFIELD_BLOCK, BROKEN_FORCEFIELD;
@@ -42,6 +43,12 @@ public class DIItems {
 				.blockstate(() -> MazeWallBlock.Model::buildModel)
 				.item().model(() -> MazeWallBlock.Model::buildItem).build()
 				.tag(BlockTags.DRAGON_IMMUNE, BlockTags.WITHER_IMMUNE, DITagGen.MAZE_STONE_AFFINITIVE, DITagGen.FORCEFIELD_CANNOT_REPLACE)
+				.register();
+
+		FILLER = DungeonInfinity.REGISTRATE.block("filler", p ->
+						DelegateBlock.newBaseBlock(p, new MazeFillerBlock()))
+				.properties(p -> p.noCollision().noOcclusion().noLootTable())
+				.defaultBlockstate().simpleItem()
 				.register();
 
 		FORCEFIELD = DungeonInfinity.REGISTRATE.block("forcefield", ForceFieldBlock::new)

@@ -2,35 +2,45 @@
   "templates": {
     "boss": {
       "copper:": {
+        "spawn": "dungeon_infinity:stone/boss",
         "weight": 100
       },
       "deepslate:": {
+        "spawn": "dungeon_infinity:stone/boss",
         "weight": 100
       },
       "mineshaft:": {
+        "spawn": "dungeon_infinity:stone/boss",
         "weight": 100
       },
       "sculk:": {
+        "spawn": "dungeon_infinity:stone/boss",
         "weight": 100
       },
       "stone:": {
+        "spawn": "dungeon_infinity:stone/boss",
         "weight": 100
       }
     },
     "cross_stairs": {
       "copper:": {
+        "spawn": "dungeon_infinity:stone/quad",
         "weight": 100
       },
       "deepslate:": {
+        "spawn": "dungeon_infinity:stone/quad",
         "weight": 100
       },
       "mineshaft:": {
+        "spawn": "dungeon_infinity:stone/quad",
         "weight": 100
       },
       "sculk:": {
+        "spawn": "dungeon_infinity:stone/quad",
         "weight": 100
       },
       "stone:": {
+        "spawn": "dungeon_infinity:stone/quad",
         "weight": 100
       }
     },
@@ -104,120 +114,155 @@
     },
     "quad": {
       "copper:": {
+        "spawn": "dungeon_infinity:stone/quad",
         "weight": 100
       },
       "deepslate:": {
+        "spawn": "dungeon_infinity:stone/quad",
         "weight": 100
       },
       "mineshaft:": {
+        "spawn": "dungeon_infinity:stone/quad",
         "weight": 100
       },
       "sculk:": {
+        "spawn": "dungeon_infinity:stone/quad",
         "weight": 100
       },
       "stone:": {
+        "spawn": "dungeon_infinity:stone/quad",
         "weight": 100
       }
     },
     "room/corner": {
       "copper:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       },
       "deepslate:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       },
       "mineshaft:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       },
       "sculk:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       },
       "stone:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       }
     },
     "room/cross": {
       "copper:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       },
       "deepslate:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       },
       "mineshaft:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       },
       "sculk:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       },
       "stone:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       }
     },
     "room/end": {
       "copper:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       },
       "deepslate:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       },
       "mineshaft:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       },
       "sculk:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       },
       "stone:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       }
     },
     "room/straight": {
       "copper:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       },
       "deepslate:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       },
       "mineshaft:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       },
       "sculk:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       },
       "stone:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       }
     },
     "room/t_way": {
       "copper:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       },
       "deepslate:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       },
       "mineshaft:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       },
       "sculk:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       },
       "stone:": {
+        "spawn": "dungeon_infinity:stone/room",
         "weight": 100
       }
     },
     "stairs": {
       "copper:": {
+        "spawn": "dungeon_infinity:stone/quad",
         "weight": 100
       },
       "deepslate:": {
+        "spawn": "dungeon_infinity:stone/quad",
         "weight": 100
       },
       "mineshaft:": {
+        "spawn": "dungeon_infinity:stone/quad",
         "weight": 100
       },
       "sculk:": {
+        "spawn": "dungeon_infinity:stone/quad",
         "weight": 100
       },
       "stone:": {
+        "spawn": "dungeon_infinity:stone/quad",
         "weight": 100
       }
     }

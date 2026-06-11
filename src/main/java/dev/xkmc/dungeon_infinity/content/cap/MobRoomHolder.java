@@ -14,9 +14,9 @@ public class MobRoomHolder {
 
 	private final @Nullable SectionRoom[][][] rooms;
 
-	final MobRoomTicker data;
-	final List<SectionRoom> list = new ArrayList<>();
-	final SectionRoom holder;
+	public final MobRoomTicker data;
+	public final List<SectionRoom> list = new ArrayList<>();
+	public final SectionRoom holder;
 
 	public MobRoomHolder(@Nullable SectionRoom[][][] rooms) {
 		this.rooms = rooms;
@@ -29,9 +29,10 @@ public class MobRoomHolder {
 				}
 			}
 		}
-		holder = list.getFirst();
-		if (holder.data == null)
-			holder.data = new MobRoomTicker();
+		holder = rooms[0].length > 1 ? rooms[1][1][1] : list.getFirst();
+		if (holder.data == null) {
+			holder.data = holder.createSpawner(rooms);
+		}
 		data = holder.data;
 	}
 
