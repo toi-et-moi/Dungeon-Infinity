@@ -27,7 +27,7 @@ public class MazeHistory extends PlayerCapabilityTemplate<MazeHistory> {
 	@SerialField
 	public int radius = 1;
 
-	public boolean inMazeDim(Player player) {
+	public static boolean inMazeDim(Player player) {
 		return player.level().dimension().identifier().equals(DIDimensionGen.LEVEL_MAZE.identifier());
 	}
 

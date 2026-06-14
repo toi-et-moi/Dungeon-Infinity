@@ -30,7 +30,7 @@
     "minecraft:gameplay/fast_lava": true,
     "minecraft:gameplay/nether_portal_spawns_piglin": false,
     "minecraft:gameplay/piglins_zombify": false,
-    "minecraft:gameplay/respawn_anchor_works": false,
+    "minecraft:gameplay/respawn_anchor_works": true,
     "minecraft:gameplay/snow_golem_melts": false,
     "minecraft:visual/ambient_light_color": "#0a0a0a",
     "minecraft:visual/fog_color": "#c0d8ff",

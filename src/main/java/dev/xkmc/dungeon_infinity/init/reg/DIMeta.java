@@ -1,5 +1,6 @@
 package dev.xkmc.dungeon_infinity.init.reg;
 
+import dev.xkmc.dungeon_infinity.content.cap.LostAndFoundData;
 import dev.xkmc.dungeon_infinity.content.cap.MazeHistory;
 import dev.xkmc.dungeon_infinity.content.cap.MazeLevelData;
 import dev.xkmc.dungeon_infinity.content.cap.MazeRoomData;
@@ -16,6 +17,8 @@ public class DIMeta {
 	private static final AttReg ATT = AttReg.of(DungeonInfinity.REG);
 
 	public static final AttVal.PlayerVal<MazeHistory> HISTORY = ATT.player("maze_history", MazeHistory.class, MazeHistory::new, PlayerCapabilityNetworkHandler::new);
+
+	public static final AttVal.PlayerVal<LostAndFoundData> LOST = ATT.player("lost_and_found", LostAndFoundData.class, LostAndFoundData::new, PlayerCapabilityNetworkHandler::new);
 
 	public static final AttVal.CapVal<LevelChunk, MazeRoomData> ROOM = ATT.entity("room", MazeRoomData.class, MazeRoomData::new, LevelChunk.class,
 			e -> e.getLevel().dimension().identifier().equals(DIDimensionGen.LEVEL_MAZE.identifier()));

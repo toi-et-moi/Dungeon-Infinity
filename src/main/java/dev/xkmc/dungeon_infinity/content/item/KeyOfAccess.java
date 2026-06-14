@@ -1,0 +1,71 @@
+package dev.xkmc.dungeon_infinity.content.item;
+
+import dev.xkmc.dungeon_infinity.content.cap.MazeHistory;
+import dev.xkmc.dungeon_infinity.init.data.DIDimensionGen;
+import dev.xkmc.dungeon_infinity.init.reg.DIItems;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.level.Level;
+
+import java.util.Set;
+import java.util.function.Consumer;
+
+public class KeyOfAccess extends Item {
+
+	public KeyOfAccess(Properties properties) {
+		super(properties.stacksTo(16));
+	}
+
+	@Override
+	public InteractionResult use(Level level, Player player, InteractionHand hand) {
+		if (MazeHistory.inMazeDim(player))
+			return InteractionResult.FAIL;
+
+		if (!(level instanceof ServerLevel sl))
+			return InteractionResult.SUCCESS;
+		ItemStack stack = player.getItemInHand(hand);
+		var pos = DIItems.POS.get(stack);
+		if (pos == null) {
+			var r = player.getRandom();
+			int x = (int) Math.round(r.nextGaussian() * 2);
+			int z = (int) Math.round(r.nextGaussian() * 2);
+			pos = new BlockPos(200 + x * 400, 244, 200 + z * 400);
+			DIItems.POS.set(stack, pos);
+		}
+		var vec = pos.getCenter();
+		var target = sl.getServer().getLevel(ResourceKey.create(Registries.DIMENSION, DIDimensionGen.LEVEL_MAZE.identifier()));
+		if (target == null) return InteractionResult.FAIL;
+		performTeleport(player, target, vec.x, vec.y, vec.z);
+		return InteractionResult.SUCCESS;
+	}
+
+	private static void performTeleport(LivingEntity e, ServerLevel level, double x, double y, double z) {
+		if (e.teleportTo(level, x, y, z, Set.of(), e.getYRot(), e.getXRot(), true)) {
+			if (!e.isFallFlying()) {
+				e.setDeltaMovement(e.getDeltaMovement().multiply(1.0, 0.0, 1.0));
+				e.setOnGround(true);
+			}
+			if (e instanceof PathfinderMob mob) {
+				mob.getNavigation().stop();
+			}
+		}
+	}
+
+	@Override
+	public void appendHoverText(ItemStack itemStack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag tooltipFlag) {
+
+	}
+
+}

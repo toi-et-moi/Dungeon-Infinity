@@ -5,6 +5,8 @@ import com.tterrag.registrate.util.entry.ItemEntry;
 import dev.xkmc.dungeon_infinity.content.block.ForceFieldBlock;
 import dev.xkmc.dungeon_infinity.content.block.MazeFillerBlock;
 import dev.xkmc.dungeon_infinity.content.block.MazeWallBlock;
+import dev.xkmc.dungeon_infinity.content.item.KeyOfAccess;
+import dev.xkmc.dungeon_infinity.content.item.KeyOfTomb;
 import dev.xkmc.dungeon_infinity.content.map.MazeMapItem;
 import dev.xkmc.dungeon_infinity.init.DungeonInfinity;
 import dev.xkmc.dungeon_infinity.init.data.DITagGen;
@@ -12,6 +14,7 @@ import dev.xkmc.l2core.init.reg.registrate.SimpleEntry;
 import dev.xkmc.l2core.init.reg.simple.DCReg;
 import dev.xkmc.l2core.init.reg.simple.DCVal;
 import dev.xkmc.l2modularblock.core.DelegateBlock;
+import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
@@ -31,9 +34,12 @@ public class DIItems {
 	public static final BlockEntry<Block> FORCEFIELD_BLOCK, BROKEN_FORCEFIELD;
 
 	public static final ItemEntry<MazeMapItem> MAP;
+	public static final ItemEntry<KeyOfTomb> KEY_OF_TOMB;
+	public static final ItemEntry<KeyOfAccess> KEY_OF_ACCESS;
 
 	public static final DCReg DC = DCReg.of(DungeonInfinity.REG);
 	public static final DCVal<Long> SEED = DC.longVal("seed");
+	public static final DCVal<BlockPos> POS = DC.reg("pos", BlockPos.class, true);
 
 	static {
 		MAZESTONE = DungeonInfinity.REGISTRATE.block("mazestone", p ->
@@ -74,6 +80,12 @@ public class DIItems {
 
 
 		MAP = DungeonInfinity.REGISTRATE.item("maze_map", MazeMapItem::new)
+				.defaultModel().register();
+
+		KEY_OF_TOMB = DungeonInfinity.REGISTRATE.item("key_of_tomb", KeyOfTomb::new)
+				.defaultModel().register();
+
+		KEY_OF_ACCESS = DungeonInfinity.REGISTRATE.item("key_of_access", KeyOfAccess::new)
 				.defaultModel().register();
 
 	}

@@ -53,7 +53,7 @@ public class DIDimensionGen {
 					.set(EnvironmentAttributes.AMBIENT_LIGHT_COLOR, -16119286)
 					.set(EnvironmentAttributes.BACKGROUND_MUSIC, BackgroundMusic.OVERWORLD)
 					.set(EnvironmentAttributes.BED_RULE, BedRule.EXPLODES)
-					.set(EnvironmentAttributes.RESPAWN_ANCHOR_WORKS, false)
+					.set(EnvironmentAttributes.RESPAWN_ANCHOR_WORKS, true)
 					.set(EnvironmentAttributes.NETHER_PORTAL_SPAWNS_PIGLINS, false)
 					.set(EnvironmentAttributes.AMBIENT_SOUNDS, AmbientSounds.LEGACY_CAVE_SETTINGS)
 					.set(EnvironmentAttributes.FAST_LAVA, true)
