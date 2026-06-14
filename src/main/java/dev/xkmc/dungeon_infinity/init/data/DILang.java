@@ -12,7 +12,9 @@ import javax.annotation.Nullable;
 import java.util.Locale;
 
 public enum DILang {
-	;
+	TOMB("tomb", "Retrieve items from previous death in the maze", 0, ChatFormatting.GRAY),
+	TOMB_ITEM_COUNT("tomb_item_count", "You have %s items to be retrieved", 1, ChatFormatting.GRAY),
+	ACCESS("access", "Teleport into or out of the maze", 0, ChatFormatting.GRAY);
 
 	private final String key, def;
 	private final int arg;

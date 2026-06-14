@@ -2,12 +2,14 @@ package dev.xkmc.dungeon_infinity.content.item;
 
 import dev.xkmc.dungeon_infinity.content.cap.MazeHistory;
 import dev.xkmc.dungeon_infinity.init.data.DIDimensionGen;
+import dev.xkmc.dungeon_infinity.init.data.DILang;
 import dev.xkmc.dungeon_infinity.init.reg.DIItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -30,8 +32,11 @@ public class KeyOfAccess extends Item {
 
 	@Override
 	public InteractionResult use(Level level, Player player, InteractionHand hand) {
-		if (MazeHistory.inMazeDim(player))
-			return InteractionResult.FAIL;
+		if (MazeHistory.inMazeDim(player)) {
+			if (player instanceof ServerPlayer sp)
+				MazeHistory.playerReturn(sp);
+			return InteractionResult.SUCCESS;
+		}
 
 		if (!(level instanceof ServerLevel sl))
 			return InteractionResult.SUCCESS;
@@ -47,11 +52,13 @@ public class KeyOfAccess extends Item {
 		var vec = pos.getCenter();
 		var target = sl.getServer().getLevel(ResourceKey.create(Registries.DIMENSION, DIDimensionGen.LEVEL_MAZE.identifier()));
 		if (target == null) return InteractionResult.FAIL;
+		if (player instanceof ServerPlayer sp)
+			MazeHistory.markEntry(sp);
 		performTeleport(player, target, vec.x, vec.y, vec.z);
 		return InteractionResult.SUCCESS;
 	}
 
-	private static void performTeleport(LivingEntity e, ServerLevel level, double x, double y, double z) {
+	public static void performTeleport(LivingEntity e, ServerLevel level, double x, double y, double z) {
 		if (e.teleportTo(level, x, y, z, Set.of(), e.getYRot(), e.getXRot(), true)) {
 			if (!e.isFallFlying()) {
 				e.setDeltaMovement(e.getDeltaMovement().multiply(1.0, 0.0, 1.0));
@@ -65,7 +72,7 @@ public class KeyOfAccess extends Item {
 
 	@Override
 	public void appendHoverText(ItemStack itemStack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag tooltipFlag) {
-
+		builder.accept(DILang.ACCESS.get());
 	}
 
 }

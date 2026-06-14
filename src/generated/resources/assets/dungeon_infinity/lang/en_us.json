@@ -13,5 +13,8 @@
   "item.dungeon_infinity.key_of_access": "Key Of Access",
   "item.dungeon_infinity.key_of_tomb": "Key Of Tomb",
   "item.dungeon_infinity.maze_map": "Maze Map",
-  "itemGroup.l2core.dungeon_infinity": "Dungeon Infinity"
+  "itemGroup.l2core.dungeon_infinity": "Dungeon Infinity",
+  "modulargolems.access": "Teleport into or out of the maze",
+  "modulargolems.tomb": "Retrieve items from previous death in the maze",
+  "modulargolems.tomb_item_count": "You have %s items to be retrieved"
 }

@@ -13,5 +13,8 @@
   "item.dungeon_infinity.key_of_access": "ssǝɔɔⱯ ɟO ʎǝʞ",
   "item.dungeon_infinity.key_of_tomb": "qɯo⟘ ɟO ʎǝʞ",
   "item.dungeon_infinity.maze_map": "dɐW ǝzɐW",
-  "itemGroup.l2core.dungeon_infinity": "ʎʇıuıɟuI uoǝbunᗡ"
+  "itemGroup.l2core.dungeon_infinity": "ʎʇıuıɟuI uoǝbunᗡ",
+  "modulargolems.access": "ǝzɐɯ ǝɥʇ ɟo ʇno ɹo oʇuı ʇɹodǝןǝ⟘",
+  "modulargolems.tomb": "ǝzɐɯ ǝɥʇ uı ɥʇɐǝp snoıʌǝɹd ɯoɹɟ sɯǝʇı ǝʌǝıɹʇǝᴚ",
+  "modulargolems.tomb_item_count": "pǝʌǝıɹʇǝɹ ǝq oʇ sɯǝʇı %1$s ǝʌɐɥ noʎ"
 }

@@ -31,6 +31,7 @@ public class DIEventHandlers {
 			var data = DIMeta.LOST.type().getOrCreate(player);
 			for (var e : event.getDrops())
 				data.add(e.getItem());
+			event.getDrops().clear();
 		}
 	}
 

@@ -1,6 +1,8 @@
 package dev.xkmc.dungeon_infinity.content.item;
 
+import dev.xkmc.dungeon_infinity.init.data.DILang;
 import dev.xkmc.dungeon_infinity.init.reg.DIMeta;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -39,7 +41,21 @@ public class KeyOfTomb extends Item {
 
 	@Override
 	public void appendHoverText(ItemStack itemStack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag tooltipFlag) {
-
+		builder.accept(DILang.TOMB.get());
+		if (context.level() != null && context.level().isClientSide()) {
+			ClientHandler.getDesc(builder);
+		}
 	}
 
+	public static class ClientHandler {
+
+		public static void getDesc(Consumer<Component> builder) {
+			var player = Minecraft.getInstance().player;
+			if (player == null) return;
+			int size = DIMeta.LOST.type().getOrCreate(player).list.size();
+			if (size == 0) return;
+			builder.accept(DILang.TOMB_ITEM_COUNT.get(size));
+		}
+
+	}
 }
