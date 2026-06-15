@@ -16,7 +16,7 @@ public record DefeatRoomPacket(
 		for (var e : list) {
 			data.getOrCreate(e).defeat(e);
 		}
-		if (list.isEmpty()) return;
+		if (list.isEmpty() || !clearAll) return;
 		data.getOrCreate(list.getFirst()).markVisible(0, 0, 25, 25);
 	}
 

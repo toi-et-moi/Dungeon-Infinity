@@ -75,6 +75,8 @@ public class MazeMapTextureManager implements AutoCloseable {
 		public int w, h;
 		public int[][] data;
 
+		private int defeat = -1;
+
 		public MapTextureData(MazeDimHolder dim, MazePos pos) {
 			this.dim = dim;
 			this.pos = pos.toVec3i();
@@ -84,16 +86,21 @@ public class MazeMapTextureManager implements AutoCloseable {
 			this.texture = new DynamicTexture(() -> "Maze Map " + pos, 128, 128, true);
 			this.id = DungeonInfinity.loc("maze_map/" + Long.toUnsignedString(pos.key(), 16));
 			Minecraft.getInstance().getTextureManager().register(id, texture);
-			fill();
 		}
 
-		public void fill() {
+		public void update(MazeHistory.Visit visit) {
+			if (visit.getDefeat() == defeat) return;
+			defeat = visit.getDefeat();
+			fill(visit);
+		}
+
+		public void fill(MazeHistory.Visit visit) {
 			NativeImage pixels = this.texture.getPixels();
 			int[][] maze = dim.getRegion(pos.getX(), pos.getY(), pos.getZ());
 			for (int x = 0; x < 25; x++) {
 				for (int z = 0; z < 25; z++) {
 					int cell = maze[x][z];
-					int[][] px = MazeMapPixelMapper.getPixels(cell);
+					int[][] px = MazeMapPixelMapper.getPixels(cell, visit.isDefeated(x, z));
 					for (int ix = 0; ix < 5; ix++) {
 						System.arraycopy(px[ix], 0, data[x * 5 + ix], z * 5, 5);
 					}

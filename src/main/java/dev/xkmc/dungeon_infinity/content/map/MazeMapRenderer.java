@@ -15,7 +15,9 @@ public class MazeMapRenderer {
 		var pos = MazePos.map(player.blockPosition());
 		var tex = MazeMapTextureManager.get().getDetail(seed, pos);
 		var fog = MazeMapTextureManager.get().getFog(seed, pos);
-		fog.update(DIMeta.HISTORY.type().getOrCreate(player).getOrCreate(pos));
+		var visit = DIMeta.HISTORY.type().getOrCreate(player).getOrCreate(pos);
+		tex.update(visit);
+		fog.update(visit);
 		pose.pushPose();
 		pose.translate(1.5f, 1.5f, 0);
 		col.submitCustomGeometry(pose, RenderTypes.text(tex.id), (mat, buffer) -> {

@@ -80,12 +80,15 @@ public class DIItems {
 
 
 		MAP = DungeonInfinity.REGISTRATE.item("maze_map", MazeMapItem::new)
+				.tag(DITagGen.ALWAYS_KEEP)
 				.defaultModel().register();
 
 		KEY_OF_TOMB = DungeonInfinity.REGISTRATE.item("key_of_tomb", KeyOfTomb::new)
+				.tag(DITagGen.ALWAYS_KEEP)
 				.defaultModel().register();
 
 		KEY_OF_ACCESS = DungeonInfinity.REGISTRATE.item("key_of_access", KeyOfAccess::new)
+				.tag(DITagGen.ALWAYS_KEEP)
 				.defaultModel().register();
 
 	}

@@ -91,7 +91,7 @@ public class MazeHistory extends PlayerCapabilityTemplate<MazeHistory> {
 	private void intoDim(ServerPlayer sp) {
 		var config = sp.getRespawnConfig();
 		if (config == null) return;
-		if (config.respawnData().dimension().identifier().equals(DIDimensionGen.LEVEL_MAZE.identifier())) {
+		if (!config.respawnData().dimension().identifier().equals(DIDimensionGen.LEVEL_MAZE.identifier())) {
 			prevHome = RespawnData.of(config);
 			sp.setRespawnPosition(null, false);
 		}
@@ -183,6 +183,10 @@ public class MazeHistory extends PlayerCapabilityTemplate<MazeHistory> {
 
 		public int getVer() {
 			return revision;
+		}
+
+		public int getDefeat() {
+			return defeat;
 		}
 
 		public boolean isVisited(int x, int z) {

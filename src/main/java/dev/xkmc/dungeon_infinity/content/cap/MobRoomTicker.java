@@ -73,6 +73,7 @@ public class MobRoomTicker {
 				for (var r : ins.list) {
 					var mp = MazePos.map(r.getBlockPos());
 					data.getOrCreate(mp).defeat(mp);
+					points.add(mp);
 				}
 				if (ins.holder.isLarge()) {
 					data.getOrCreate(MazePos.map(ins.holder.getBlockPos())).markVisible(0, 0, 25, 25);

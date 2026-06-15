@@ -27,7 +27,9 @@ public class MazeMapScreen extends Screen {
 		var pos = MazePos.map(player.blockPosition());
 		var tex = MazeMapTextureManager.get().getDetail(seed, pos);
 		var fog = MazeMapTextureManager.get().getFog(seed, pos);
-		fog.update(DIMeta.HISTORY.type().getOrCreate(player).getOrCreate(pos));
+		var visit = DIMeta.HISTORY.type().getOrCreate(player).getOrCreate(pos);
+		tex.update(visit);
+		fog.update(visit);
 		int x0 = g.guiWidth() / 2, y0 = g.guiHeight() / 2;
 		float rate = Math.min(x0 / 64f, y0 / 64f) / 1.5f;
 		g.pose().pushMatrix();

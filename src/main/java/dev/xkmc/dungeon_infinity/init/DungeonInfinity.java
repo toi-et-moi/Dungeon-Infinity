@@ -65,6 +65,7 @@ public class DungeonInfinity {
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public static void gatherData(GatherDataEvent.Client event) {
 		REGISTRATE.addDataGenerator(ProviderType.LANG, DILang::genLang);
+		REGISTRATE.addDataGenerator(ProviderType.ITEM_TAGS, DITagGen::genItemTags);
 		REGISTRATE.addDataGenerator(ProviderType.BLOCK_TAGS, DITagGen::genBlockTags);
 		var init = REGISTRATE.getDataGenInitializer();
 		DIDimensionGen.init(init);

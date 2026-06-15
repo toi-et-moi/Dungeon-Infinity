@@ -33,7 +33,7 @@ public class MazeDimHolder {
 		this.seed = seed;
 	}
 
-	private RegionStack get(int x, int z) {
+	public synchronized RegionStack get(int x, int z) {
 		return stacks.computeIfAbsent(ChunkPos.pack(x, z), k0 -> new RegionStack(x, z));
 	}
 
